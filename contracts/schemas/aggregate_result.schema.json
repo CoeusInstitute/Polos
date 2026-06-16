@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AggregateResultPayload",
+  "description": "All accepted sub-results, assembled for Alpha.",
+  "type": "object",
+  "required": [
+    "result_refs",
+    "results"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "result_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "caveats": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

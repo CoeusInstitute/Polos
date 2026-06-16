@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DocCommittedPayload",
+  "description": "Record that a doc change passed both gates.",
+  "type": "object",
+  "required": [
+    "doc_assignment_ref",
+    "path"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "doc_assignment_ref": {
+      "type": "string"
+    },
+    "path": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,2 @@
+# Dev/CI dependencies for the Polos validator.
+pyyaml>=6.0

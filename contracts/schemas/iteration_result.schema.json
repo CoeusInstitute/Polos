@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "IterationResultPayload",
+  "description": "The verified outcome of one loop iteration, reported by QC to the Loop Controller with the Verifier's objective evidence.",
+  "type": "object",
+  "required": [
+    "iteration",
+    "passed",
+    "verified_evidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "iteration": {
+      "type": "integer"
+    },
+    "passed": {
+      "type": "boolean",
+      "description": "Whether the external stop_condition is satisfied, as verified by the Verifier through QC \u2014 never the worker's self-report."
+    },
+    "verified_evidence": {
+      "type": "string",
+      "description": "Objective evidence from the Verifier (test output, build status)."
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "What this iteration changed (recorded in the loop ledger)."
+    },
+    "failures": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "What failed this iteration, recorded so the next fresh context avoids dead ends."
+    },
+    "progress_metric": {
+      "type": "number",
+      "description": "Progress measure used by the Loop Controller's no-progress guardrail."
+    }
+  }
+}

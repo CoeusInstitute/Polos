@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "IterationAssignmentPayload",
+  "description": "Loop Controller's instruction for one iteration. The worker starts from a FRESH context and reads the ledger; it does not carry conversational state across iterations.",
+  "type": "object",
+  "required": [
+    "iteration_n",
+    "ledger_ref",
+    "goal",
+    "fresh_context"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "iteration_n": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "ledger_ref": {
+      "type": "string",
+      "description": "Pointer to the loop ledger in loops/; the source of truth the worker reconstructs context from each pass."
+    },
+    "goal": {
+      "type": "string",
+      "description": "The single next increment for this iteration."
+    },
+    "fresh_context": {
+      "type": "boolean",
+      "const": true,
+      "description": "Always true: the worker MUST rebuild context from the ledger and never carry conversational state across iterations (the Ralph pattern). Encoded as a required const so a non-fresh-context iteration cannot be expressed."
+    }
+  }
+}

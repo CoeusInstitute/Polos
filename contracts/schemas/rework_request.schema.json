@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ReworkRequestPayload",
+  "description": "QC's itemized reasons a result must be reworked.",
+  "type": "object",
+  "required": [
+    "assignment_ref",
+    "failed_checks"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "assignment_ref": {
+      "type": "string"
+    },
+    "failed_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "check",
+          "shortfall"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "check": {
+            "type": "string"
+          },
+          "shortfall": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "guidance": {
+      "type": "string"
+    }
+  }
+}

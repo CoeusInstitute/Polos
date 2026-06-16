@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TaskManifestPayload",
+  "description": "Router's plan handed to the Taskmaster.",
+  "type": "object",
+  "required": [
+    "objective",
+    "sub_goals"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "objective": {
+      "type": "string"
+    },
+    "gathered_context": {
+      "type": "string"
+    },
+    "sub_goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "agent_shortlist": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LoopStateUpdatePayload",
+  "description": "The loop ledger written to the loops/ store by the runtime. The external state file at the heart of the looping methodology.",
+  "type": "object",
+  "required": [
+    "loop_id",
+    "iteration_n",
+    "ledger"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "loop_id": {
+      "type": "string"
+    },
+    "iteration_n": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "ledger": {
+      "type": "object",
+      "required": [
+        "spec",
+        "definition_of_done",
+        "stop_condition",
+        "budgets",
+        "status"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "spec": {
+          "type": "string"
+        },
+        "definition_of_done": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "stop_condition": {
+          "type": "string"
+        },
+        "budgets": {
+          "type": "object",
+          "required": [
+            "max_iterations",
+            "max_wall_clock_seconds",
+            "max_cost_usd",
+            "no_progress_patience"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "max_iterations": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "max_wall_clock_seconds": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "max_cost_usd": {
+              "type": "number",
+              "minimum": 0
+            },
+            "no_progress_patience": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Iterations with no measurable progress before the loop stops."
+            }
+          }
+        },
+        "iterations": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "Append-only per-iteration record: goal, changes, failures, verified result. This is the external memory that survives fresh contexts."
+        },
+        "budget_consumed": {
+          "type": "object"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "running",
+            "done",
+            "budget_exhausted",
+            "no_progress",
+            "halted"
+          ]
+        }
+      }
+    }
+  }
+}

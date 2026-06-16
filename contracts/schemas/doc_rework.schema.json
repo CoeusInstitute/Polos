@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DocReworkPayload",
+  "description": "QC's reasons a doc change failed: DOX shape, doc-vs-source consistency, or index reachability.",
+  "type": "object",
+  "required": [
+    "failed_checks"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "failed_checks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

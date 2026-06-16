@@ -1,0 +1,116 @@
+# flow.graph.yaml — the COMPLETE connection graph. Every legal message path is an edge here.
+# Senders never choose gates; this file assigns them. The completeness invariants at the bottom
+# are the formal "no gaps" guarantee — all must pass (tools/validate_mesh.py) before going live.
+#
+# Edge fields:
+#   from / to : role ids (or substrate sinks: human, audit, backpacks, loops)
+#   type      : MeshEnvelope type carried
+#   gates     : ordered mediators on the edge ([] = direct; entry/terminal/internal only)
+#   on_fail   : where a gated message goes if a gate FAILs (required wherever gates is non-empty)
+
+edges:
+
+  # ---- Request path (intent -> orchestration) ----
+  - {from: human,      to: alpha,            type: user_request,         gates: []}
+  - {from: alpha,      to: router,           type: request_manifest,     gates: [monitor], on_fail: refuse}
+  - {from: router,     to: retrieval-worker, type: retrieval_manifest,   gates: [monitor], on_fail: refuse}
+  - {from: retrieval-worker, to: router,      type: retrieval_result,    gates: [monitor], on_fail: refuse}
+  - {from: router,     to: taskmaster,       type: task_manifest,        gates: [monitor], on_fail: refuse}
+
+  # ---- Loop path (Ralph / loop engineering, made safe) ----
+  - {from: alpha,           to: loop-controller, type: loop_request,        gates: [monitor], on_fail: refuse}
+  - {from: loop-controller, to: taskmaster,      type: iteration_assignment, gates: [monitor], on_fail: refuse}
+  - {from: loop-controller, to: loops,           type: loop_state_update,    gates: []}        # external ledger write (runtime sink)
+  - {from: loop-controller, to: alpha,           type: loop_complete,        gates: [monitor], on_fail: refuse}
+
+  # ---- Execution path (orchestration -> execution -> double gate) ----
+  # Tiered approval (Security/Human per consequence_class) is a credential/tool-activation precondition, NOT a separate edge.
+  - {from: taskmaster,      to: execution-worker, type: assignment,        gates: [monitor], on_fail: block}
+  - {from: execution-worker, to: monitor,         type: work_result,       gates: []}
+  - {from: monitor,         to: qc,               type: work_result,       gates: []}
+  - {from: qc,              to: verifier,         type: verify_spec,       gates: []}
+  - {from: verifier,        to: qc,               type: verify_result,     gates: []}
+  - {from: qc,              to: taskmaster,       type: accepted_result,   gates: []}
+  - {from: qc,              to: taskmaster,       type: rework_request,    gates: []}
+  - {from: qc,              to: loop-controller,  type: iteration_result,  gates: []}         # loop iterations report here
+  - {from: taskmaster,      to: alpha,            type: aggregate_result,  gates: [monitor], on_fail: refuse}
+  - {from: alpha,           to: monitor,          type: response,          gates: []}
+  - {from: monitor,         to: human,            type: response,          gates: []}         # TERMINAL: response
+
+  # ---- Documentation path (DOX, Archivist) ----
+  - {from: taskmaster, to: archivist, type: doc_assignment,   gates: []}
+  - {from: archivist,  to: monitor,   type: doc_change,       gates: []}
+  - {from: monitor,    to: qc,        type: doc_change,       gates: []}
+  - {from: qc,         to: archivist, type: doc_rework,       gates: []}
+  - {from: qc,         to: taskmaster,type: doc_committed,    gates: []}
+  - {from: qc,         to: audit,     type: doc_committed,    gates: []}
+  - {from: archivist,  to: audit,     type: closeout_report,  gates: []}
+
+  # ---- Oversight overlay (verdict + halt + escalation) ----
+  - {from: monitor,  to: security, type: verdict, gates: []}
+  - {from: monitor,  to: audit,    type: verdict, gates: []}
+  - {from: qc,       to: security, type: verdict, gates: []}
+  - {from: qc,       to: audit,    type: verdict, gates: []}
+  - {from: security, to: alpha,            type: halt,       gates: []}
+  - {from: security, to: router,           type: halt,       gates: []}
+  - {from: security, to: taskmaster,       type: halt,       gates: []}
+  - {from: security, to: loop-controller,  type: halt,       gates: []}
+  - {from: security, to: monitor,          type: halt,       gates: []}
+  - {from: security, to: qc,               type: halt,       gates: []}
+  - {from: security, to: execution-worker, type: quarantine, gates: []}
+  - {from: security, to: archivist,        type: quarantine, gates: []}
+  - {from: security, to: retrieval-worker, type: quarantine, gates: []}
+  - {from: security, to: verifier,         type: quarantine, gates: []}
+  - {from: security, to: evaluator,        type: quarantine, gates: []}
+  - {from: security, to: learning,         type: quarantine, gates: []}
+  - {from: security, to: human,            type: escalation, gates: []}  # TERMINAL: human escalation
+  - {from: security, to: audit,            type: verdict,    gates: []}
+
+  # ---- Adaptation: robust, MEASURED self-improvement ----
+  - {from: audit,     to: learning,  type: signals,              gates: []}
+  - {from: learning,  to: evaluator, type: proposed_improvement, gates: []}   # must be measured before anything else
+  - {from: evaluator, to: monitor,   type: measured_improvement,  gates: []}   # forwarded ONLY if shadow test shows benefit + no regression (measurement fields required)
+  - {from: evaluator, to: audit,     type: rejected_improvement, gates: []}   # failed measurement -> logged, goes no further
+  - {from: learning,  to: monitor,   type: lesson_retirement,    gates: []}   # retire stale/contradicted lessons (still reviewed)
+  - {from: monitor,   to: security,  type: ratify_request,       gates: []}   # non-safety actions: Security ratifies
+  - {from: monitor,   to: human,     type: ratify_request,       gates: []}   # safety-adjacent actions: Human ratifies
+  - {from: monitor,   to: audit,     type: flagged_edit,         gates: []}   # weakens a constraint -> rejected
+  - {from: security,  to: backpacks, type: backpack_commit,      gates: []}   # append-only, versioned
+  - {from: human,     to: backpacks, type: backpack_commit,      gates: []}
+
+  # ---- Universal logging (rule, not edges) ----
+  # RULE: monitor, qc, and security additionally emit a log envelope to `audit` for EVERY decision.
+  # RULE: the runtime derives `episode` records into the experience/ store from the audit log.
+
+# ============================================================================
+# COMPLETENESS INVARIANTS  (the "no gaps" check — tools/validate_mesh.py)
+# ============================================================================
+invariants:
+  - id: I1
+    rule: Every role's declared `outputs` has at least one outbound edge of each output type.
+  - id: I2
+    rule: Every role's declared `inputs` has at least one inbound edge of each input type.
+  - id: I3
+    rule: Every edge carrying a worker result (work_result) or a doc change (doc_change) is mediated by monitor THEN qc before acceptance.
+  - id: I4
+    rule: Every edge with a non-empty `gates` list defines an `on_fail` target.
+  - id: I5
+    rule: Every request path terminates at exactly one TERMINAL — monitor->human:response, security->human:escalation, or an explicit refuse/block sink.
+  - id: I6
+    rule: Every edge whose `from` is a non-execution role carries no effectful tools or credentials.
+  - id: I7
+    rule: No edge anywhere writes to `constitution/**`.
+  - id: I8
+    rule: Security reaches every other role via a halt/quarantine edge (Security itself is governed by the external human kill switch, not a self-halt edge), and observes verdicts + audit independently of the orchestration chain.
+  - id: I9
+    rule: Backpack commits originate only from security or human (ratified); learning can only propose.
+  - id: I10
+    rule: Every gate (monitor, qc, security) emits an audit log entry for every decision.
+  - id: I11
+    rule: Control edges (halt, quarantine) are exempt from per-card input declaration; the state machine handles them uniformly from any state.
+  - id: I12
+    rule: A loop must declare explicit budgets (max_iterations, max_wall_clock_seconds, max_cost_usd, no_progress_patience) and an externally verifiable stop_condition; the Loop Controller holds no effectful tools and the stop check is sourced from the Verifier, never self-reported by the worker.
+  - id: I13
+    rule: A proposed_improvement must pass the Evaluator (measured benefit, no regressions) before it can reach the Monitor; no improvement edge bypasses the Evaluator on its way to ratification.
+  - id: I14
+    rule: Self-improvement commits are append-only and versioned and may add only lessons or playbooks; they may never grant capability, alter the constitution, or weaken a gate.

@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CloseoutReportPayload",
+  "description": "Archivist's DOX closeout report.",
+  "type": "object",
+  "required": [
+    "created",
+    "repaired",
+    "preserved"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "created": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "repaired": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "preserved": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "indexes_refreshed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "left_unchanged": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "unresolved": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

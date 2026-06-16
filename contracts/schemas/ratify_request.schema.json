@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RatifyRequestPayload",
+  "description": "Monitor's routing of a reviewed self-improvement action (add or retire) for ratification by Security (non-safety) or the Human (safety-adjacent).",
+  "type": "object",
+  "required": [
+    "action",
+    "classification"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "add",
+        "retire"
+      ]
+    },
+    "edit": {
+      "type": "object"
+    },
+    "classification": {
+      "type": "string",
+      "enum": [
+        "non-safety",
+        "safety-adjacent"
+      ]
+    }
+  }
+}

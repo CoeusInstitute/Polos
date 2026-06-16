@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BackpackCommitPayload",
+  "description": "A ratified, append-only, versioned backpack mutation: add a lesson/playbook or retire one. Never deletes history.",
+  "type": "object",
+  "required": [
+    "target_role",
+    "action",
+    "version",
+    "evidence_trace_ids",
+    "ratified_by"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "target_role": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "add",
+        "retire"
+      ],
+      "description": "'add' appends a lesson/playbook; 'retire' appends a tombstone disabling a prior one. History is never deleted."
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "lesson",
+        "playbook"
+      ],
+      "description": "Required when action=add. A heuristic (lesson) or a reusable task strategy (playbook) \u2014 never a capability or constraint change."
+    },
+    "lesson": {
+      "type": "string",
+      "description": "Required when action=add."
+    },
+    "lesson_id": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer",
+      "description": "Append-only version counter for this target_role's backpack."
+    },
+    "supersedes_lesson_id": {
+      "type": "string",
+      "description": "For action=retire: the lesson being disabled."
+    },
+    "ratified_by": {
+      "type": "string",
+      "enum": [
+        "security",
+        "human"
+      ]
+    },
+    "evidence_trace_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "action": { "const": "add" } } },
+      "then": { "required": ["kind", "lesson", "lesson_id"] }
+    },
+    {
+      "if": { "properties": { "action": { "const": "retire" } } },
+      "then": { "required": ["supersedes_lesson_id"] }
+    }
+  ]
+}

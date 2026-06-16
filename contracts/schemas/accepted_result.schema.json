@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AcceptedResultPayload",
+  "description": "A result that passed both gates.",
+  "type": "object",
+  "required": [
+    "assignment_ref",
+    "result"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "assignment_ref": {
+      "type": "string"
+    },
+    "result": {
+      "type": "object"
+    },
+    "qc_notes": {
+      "type": "string"
+    }
+  }
+}

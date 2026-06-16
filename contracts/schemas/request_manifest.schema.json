@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RequestManifestPayload",
+  "description": "Alpha's resolved statement of intent for a single-pass request. intent_ref is carried on the envelope, not here.",
+  "type": "object",
+  "required": [
+    "objective",
+    "success_criteria"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "objective": {
+      "type": "string"
+    },
+    "success_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

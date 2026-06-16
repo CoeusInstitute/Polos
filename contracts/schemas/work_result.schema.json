@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WorkResultPayload",
+  "description": "Execution Worker's result; double-gated by Monitor (safety) then QC (quality).",
+  "type": "object",
+  "required": [
+    "assignment_ref",
+    "status",
+    "outputs",
+    "evidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "assignment_ref": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "partial",
+        "failed"
+      ]
+    },
+    "outputs": {
+      "type": "object"
+    },
+    "evidence": {
+      "type": "string"
+    },
+    "what_was_done": {
+      "type": "string"
+    }
+  }
+}

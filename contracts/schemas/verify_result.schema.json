@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VerifyResultPayload",
+  "description": "Objective, reproducible evidence from the Verifier. Carries no verdict.",
+  "type": "object",
+  "required": [
+    "verify_ref",
+    "check",
+    "passed",
+    "evidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "verify_ref": {
+      "type": "string"
+    },
+    "check": {
+      "type": "string"
+    },
+    "passed": {
+      "type": "boolean"
+    },
+    "evidence": {
+      "type": "string"
+    },
+    "logs": {
+      "type": "string"
+    }
+  }
+}

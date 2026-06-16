@@ -1,0 +1,46 @@
+# models.yaml — single source of truth for model binding (OpenRouter-style).
+# Change a model HERE, in one place, and every agent of that role picks it up.
+# IDs are explicit provider/model strings. No hidden tiers, no opaque abstraction.
+#
+# NOTE: the IDs below are EXAMPLES. Replace them with the current slugs valid for your
+# OpenRouter (or other gateway) account before running.
+
+# Active profile. Flip the whole mesh with one value. Overridable via env MESH_PROFILE.
+profile: balanced            # cheap | balanced | max
+
+# Profiles bind two CLASSES: `worker` (does work) and `oversight` (guards work).
+# Oversight is deliberately a DIFFERENT model lineage than worker, so a jailbreak that
+# fools an actor does not automatically fool its guardian (anti-correlated-failure).
+profiles:
+  cheap:
+    worker:    openrouter/anthropic/claude-3.5-haiku
+    oversight: openrouter/openai/gpt-4o-mini            # different lineage than worker
+  balanced:
+    worker:    openrouter/anthropic/claude-sonnet-4
+    oversight: openrouter/google/gemini-2.0-flash       # different lineage than worker
+  max:
+    worker:    openrouter/anthropic/claude-opus-4
+    oversight: openrouter/openai/gpt-4o                  # different lineage than worker
+
+# Per-role binding.
+#   class: worker | oversight   -> inherits the active profile's model for that class
+#   model: <explicit id>        -> OPTIONAL pin; overrides the class default for this role only
+# Resolution rule: role.model if present, else profiles[active][role.class].
+roles:
+  alpha:            { class: worker }
+  router:           { class: worker }
+  taskmaster:       { class: worker }
+  retrieval-worker: { class: worker }
+  execution-worker: { class: worker }
+  archivist:        { class: worker }
+  verifier:         { class: worker }
+  monitor:          { class: oversight }
+  qc:               { class: oversight }
+  security:         { class: oversight }
+  learning:         { class: worker }
+  loop-controller:  { class: worker }
+  evaluator:        { class: oversight }   # diverse lineage -> independent measurement (no grading its own homework)
+
+# Optional: pin a single role without touching the profile. Example:
+# roles:
+#   security: { class: oversight, model: openrouter/anthropic/claude-opus-4 }

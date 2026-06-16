@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LoopCompletePayload",
+  "description": "Loop Controller's terminal report to Alpha when the loop stops (success or a guardrail tripped).",
+  "type": "object",
+  "required": [
+    "loop_id",
+    "status",
+    "ledger_ref"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "loop_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "done",
+        "budget_exhausted",
+        "no_progress",
+        "halted"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "ledger_ref": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LessonRetirementPayload",
+  "description": "A request to retire a stale or contradicted lesson. Keeps the knowledge base healthy; still safety-reviewed and ratified.",
+  "type": "object",
+  "required": [
+    "target_role",
+    "lesson_id",
+    "reason"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "target_role": {
+      "type": "string"
+    },
+    "lesson_id": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string",
+      "description": "e.g. the lesson stopped correlating with fewer failures, or was contradicted by newer evidence."
+    },
+    "evidence_trace_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

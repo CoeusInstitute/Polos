@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LoopRequestPayload",
+  "description": "Alpha's request to run a bounded, self-correcting loop toward a spec. Looping methodology (Ralph / loop engineering): fresh context each iteration, verifiable stop condition, external state.",
+  "type": "object",
+  "required": [
+    "spec",
+    "definition_of_done",
+    "stop_condition",
+    "budgets"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "spec": {
+      "type": "string",
+      "description": "The durable specification the loop works toward (the external source of truth)."
+    },
+    "definition_of_done": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "stop_condition": {
+      "type": "string",
+      "description": "An EXTERNALLY verifiable done-check (e.g. 'all tests pass', 'build green'). Must be checkable by the Verifier, never self-reported by the worker."
+    },
+    "budgets": {
+      "type": "object",
+      "required": [
+        "max_iterations",
+        "max_wall_clock_seconds",
+        "max_cost_usd",
+        "no_progress_patience"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "max_iterations": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_wall_clock_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_cost_usd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "no_progress_patience": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Iterations with no measurable progress before the loop stops."
+        }
+      }
+    }
+  }
+}

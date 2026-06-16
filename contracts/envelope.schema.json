@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MeshEnvelope",
+  "description": "Uniform message envelope for EVERY inter-agent transmission. Every edge in flow.graph.yaml carries exactly this shape. No agent may emit or accept a message that is not a valid MeshEnvelope. This uniformity is what makes the connection flow gapless.",
+  "type": "object",
+  "required": ["id", "trace_id", "from", "to", "type", "intent_ref", "payload", "credentials", "gates_required", "consequence_class", "created_at"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "description": "Unique id for this single message." },
+    "trace_id": { "type": "string", "description": "Request-scoped id, constant for the entire request lifecycle. Ties every message, verdict, and audit entry together." },
+    "from": { "type": "string", "description": "Emitting role id (must exist in roles/)." },
+    "to": { "type": "string", "description": "Destination role id. Must match a handoff edge in flow.graph.yaml." },
+    "type": { "type": "string", "description": "Message type. Must be in the sender's declared outputs and the receiver's declared inputs." },
+    "intent_ref": { "type": "string", "description": "The ORIGINAL user intent, carried unchanged end-to-end so every gate can judge faithfulness against the true request." },
+    "payload": { "type": "object", "description": "Type-specific body. Validated against contracts/schemas/<type>.schema.json." },
+    "credentials": {
+      "type": ["object", "null"],
+      "description": "JIT scoped credentials attached by the Taskmaster on execution edges only; null elsewhere.",
+      "required": ["scope", "tools", "expires_at"],
+      "additionalProperties": false,
+      "properties": {
+        "scope": { "type": "string" },
+        "tools": { "type": "array", "items": { "type": "string" } },
+        "expires_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "gates_required": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["monitor", "qc", "security"] },
+      "description": "Ordered gates this message must clear before delivery. Set by flow.graph.yaml, NEVER chosen by the sender."
+    },
+    "consequence_class": {
+      "type": "string",
+      "enum": ["read", "write-internal", "external-write", "comms", "financial", "code-exec", "docs"],
+      "description": "Drives tiered oversight (constitution/core.md Tiering)."
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "hash": { "type": "string", "description": "Hash of {from,to,type,intent_ref,payload,created_at}, chained into the audit log for tamper-evidence." }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "assignment" } } },
+      "then": { "properties": { "credentials": { "type": "object" } } },
+      "else": { "properties": { "credentials": { "type": "null" } } }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+Polos
+Copyright 2026 Coeus Institute  <https://coeus.institute>
+
+Polos is an open-source project created and maintained by Coeus Institute.
+
+Licensed under the GNU Affero General Public License, Version 3.0 (AGPL-3.0).
+See LICENSE for the full terms.
+
+Polos is offered as a public good for the agent-safety community, not as a
+commercial product. If you run a modified version as a network service, the
+AGPL (section 13) requires you to make your modifications available to its
+users. Commercial or proprietary arrangements beyond what the AGPL permits:
+contact Coeus Institute at https://coeus.institute.
+
+The "DOX" documentation convention used for the AGENTS.md tree is authored by
+Coeus Institute and is incorporated here as the documentation discipline for
+Polos. DOX framework derived from the AgentZero project, of the same name.

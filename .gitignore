@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+
+# Node (for adapters that build in JS/TS)
+node_modules/
+dist/
+build/
+.next/
+.turbo/
+
+# Environment / secrets — NEVER commit model keys or credentials
+.env
+.env.*
+*.local
+
+# Runtime-written stores (the repo ships the contracts, not the data)
+.coeus/tool-failures.log
+audit/*.log
+audit/*.jsonl
+backpacks/*/*.md
+!backpacks/AGENTS.md
+loops/*.jsonl
+loops/*.json
+!loops/AGENTS.md
+experience/*.jsonl
+experience/*.json
+!experience/AGENTS.md
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.code-workspace
+
+# Local-only / not part of the public Polos spec
+.coeus/
+LESSONS_LEARNED.md

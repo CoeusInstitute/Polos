@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MeasuredImprovementPayload",
+  "description": "A proposed improvement AFTER the Evaluator has shadow-tested it on held-out experience. ONLY the Evaluator emits this, and ONLY to the Monitor. The required measurement fields are what make I13 structural: an unmeasured proposal cannot be expressed on this edge, so nothing reaches safety review without evidence.",
+  "type": "object",
+  "required": [
+    "target_failure",
+    "hypothesis",
+    "kind",
+    "target_role",
+    "delta",
+    "evidence_trace_ids",
+    "measured_benefit",
+    "regressions",
+    "evaluation_evidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "target_failure": {
+      "type": "string",
+      "description": "The recurring, evidenced failure this addresses."
+    },
+    "hypothesis": {
+      "type": "string",
+      "description": "The falsifiable claim the Evaluator tested: applying `delta` reduces `target_failure` without regressions."
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "lesson",
+        "playbook"
+      ],
+      "description": "A heuristic (lesson) or a reusable task strategy (playbook). NEVER a capability or constraint change (I14)."
+    },
+    "target_role": {
+      "type": "string"
+    },
+    "delta": {
+      "type": "string",
+      "description": "The proposed addition. Append-only in intent."
+    },
+    "evidence_trace_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "measured_benefit": {
+      "type": "number",
+      "description": "Evaluator-measured failure-rate reduction on the held-out set. Must clear limits.improvement.min_measured_benefit to be forwarded."
+    },
+    "regressions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "New failures introduced on the control set. Must be empty (zero regressions) for the Evaluator to forward this; a non-empty list means the proposal is rejected instead."
+    },
+    "evaluation_evidence": {
+      "type": "string",
+      "description": "The Evaluator's reproducible measurement record (held-out and control set results)."
+    }
+  }
+}

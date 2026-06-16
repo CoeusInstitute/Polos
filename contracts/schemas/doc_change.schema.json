@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DocChangePayload",
+  "description": "A full AGENTS.md/docs file the Archivist proposes; gated by Monitor then QC. Full content, never a diff.",
+  "type": "object",
+  "required": [
+    "path",
+    "content"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "path": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "derived_from": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

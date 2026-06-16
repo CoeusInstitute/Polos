@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FlaggedEditPayload",
+  "description": "A rejected backpack proposal, logged for the record.",
+  "type": "object",
+  "required": [
+    "reason"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "edit": {
+      "type": "object"
+    },
+    "reason": {
+      "type": "string"
+    }
+  }
+}

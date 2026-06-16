@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ProposedImprovementPayload",
+  "description": "A measured, evidence-backed improvement proposal. Must pass the Evaluator's shadow test before it can reach ratification.",
+  "type": "object",
+  "required": [
+    "target_failure",
+    "hypothesis",
+    "kind",
+    "target_role",
+    "delta",
+    "evidence_trace_ids"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "target_failure": {
+      "type": "string",
+      "description": "The recurring, evidenced failure this addresses."
+    },
+    "hypothesis": {
+      "type": "string",
+      "description": "A falsifiable claim: applying `delta` should reduce `target_failure` without regressions."
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "lesson",
+        "playbook"
+      ],
+      "description": "A heuristic (lesson) or a reusable task strategy (playbook). NEVER a capability or constraint change."
+    },
+    "target_role": {
+      "type": "string"
+    },
+    "delta": {
+      "type": "string",
+      "description": "The proposed addition. Append-only in intent."
+    },
+    "evidence_trace_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "measured_benefit": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Set by the Evaluator: failure-rate reduction on held-out historical traces."
+    },
+    "regressions": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "description": "Set by the Evaluator: any new failures the change would introduce."
+    },
+    "evaluation_evidence": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": { "required": ["measured_benefit"] },
+      "then": { "required": ["regressions", "evaluation_evidence"] }
+    },
+    {
+      "if": { "required": ["evaluation_evidence"] },
+      "then": { "required": ["measured_benefit", "regressions"] }
+    }
+  ]
+}

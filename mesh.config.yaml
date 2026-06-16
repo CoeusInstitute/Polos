@@ -1,0 +1,49 @@
+# mesh.config.yaml — top-level mesh switches. Behavior policy lives in constitution/core.md;
+# this file only turns parts on/off and sets numeric bounds.
+
+roles_enabled:
+  alpha: true
+  router: true
+  taskmaster: true
+  retrieval-worker: true
+  execution-worker: true
+  archivist: true          # set false to run without self-maintaining docs (not recommended)
+  verifier: true           # set false to make QC judgment-only (no read-only verification)
+  monitor: true            # required
+  qc: true                 # required
+  security: true           # required
+  learning: true           # set false to freeze self-improvement entirely
+  loop-controller: true    # set false to disable looped execution (single-pass only)
+  evaluator: true          # measures improvement proposals before ratification (keep on if learning is on)
+
+# Tiered oversight maps a consequence class to required gates + approvals.
+# (The canonical policy is constitution/core.md §Tiering; this mirrors it for the runner.)
+tiering:
+  read:            { gates: [monitor], approval: none }
+  docs:            { gates: [monitor, qc], approval: none }
+  write-internal:  { gates: [monitor, qc], approval: none }
+  comms:           { gates: [monitor, qc], approval: security }
+  external-write:  { gates: [monitor, qc], approval: security }
+  code-exec:       { gates: [monitor, qc], approval: human }
+  financial:       { gates: [monitor, qc], approval: human }
+
+limits:
+  rework_max: 3            # QC FAIL -> rework loop, bounded. Beyond this: return best-effort + caveat, log.
+  credential_ttl_seconds: 300
+  fail_mode: closed        # closed = block on uncertainty/unavailability. Do not change to open.
+
+  # Loop-engineering guardrails (Loop Controller). Each request also carries its own budgets;
+  # these are the mesh-wide ceilings a request budget may not exceed.
+  loop:
+    max_iterations: 25
+    max_wall_clock_seconds: 3600
+    max_cost_usd: 25.0
+    no_progress_patience: 3                # iterations with no measurable progress before stopping
+    require_external_stop_condition: true  # a loop with no Verifier-checkable done-check is rejected
+
+  # Measured self-improvement (Learning + Evaluator).
+  improvement:
+    min_measured_benefit: 0.05   # required failure-rate reduction on held-out traces to forward a proposal
+    max_regressions: 0           # any regression on the control set blocks the proposal
+    eval_min_sample: 20          # minimum held-out episodes before a measured verdict is trusted
+    commits_append_only: true    # lessons/playbooks are versioned and reversible, never deleted
