@@ -5,9 +5,7 @@
   <img src="POLOS-white-trans.png" alt="Polos" width="520" />
 </picture>
 
-<h1>Polos</h1>
-
-**A self-improving, safe-looping, prompt-injection-resistant agentic harness that turns one AI agent into a governed _mesh_ where no single component can both decide and act.**
+**A governed agent mesh that decomposes one AI agent into fourteen specialized roles so no single component can both decide and act, with structurally enforced safety, bounded self-correcting loops, measured self-improvement, repeatable task memory, and conditional self-healing.**
 
 *An open-source project by [Coeus Institute](https://coeus.institute), free and open under AGPL-3.0.*
 
