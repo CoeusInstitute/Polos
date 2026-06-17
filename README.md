@@ -1,12 +1,9 @@
 <div align="center">
 
-<!-- Logo block: uncomment after dropping polos-logo.png and polos-logo-light.png into docs/assets/
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/polos-logo.png" />
-  <source media="(prefers-color-scheme: light)" srcset="docs/assets/polos-logo-light.png" />
-  <img src="docs/assets/polos-logo.png" alt="Polos" width="520" />
+  <source media="(prefers-color-scheme: dark)" srcset="POLOS-white-trans.png" />
+  <img src="POLOS-white-trans.png" alt="Polos" width="520" />
 </picture>
--->
 
 <h1>Polos</h1>
 
