@@ -1,9 +1,9 @@
 # Self-Improvement — Governed, Measured Reflexion
 
-The second capability that makes this mesh more than a security wrapper. The mesh gets better over
-time the way a careful engineering org does: it accumulates **evidence-tested lessons**, not new
-permissions. Improvement here is *measured before adoption, append-only, reversible, and bounded* —
-and crucially, **evaluated by a different mind than the one being improved.**
+One of the capabilities that makes this mesh more than a security wrapper. The mesh gets better over
+time the way a careful engineering org does: it accumulates **evidence-tested lessons and playbooks**,
+not new permissions. Improvement here is *measured before adoption, append-only, reversible, and
+bounded* — and crucially, **evaluated by a different mind than the one being improved.**
 
 ## The method it builds on
 The reference point is **Reflexion** (Shinn et al., 2023). Reflexion separates self-improvement into
@@ -29,7 +29,7 @@ Evaluator on a **different model lineage** than the proposer:
 | Reflexion role | Mesh role | Why it's separated |
 |---|---|---|
 | Actor | the **workers** (Execution / Retrieval) | They produce the episodes that get reflected on. |
-| Self-Reflection | **Learning** (adaptation) | Distills logged failures into *proposed* lessons — but **can only propose.** |
+| Self-Reflection | **Learning** (adaptation) | Distills logged failures into *proposed* lessons/playbooks — but **can only propose.** |
 | Evaluator | **Evaluator** (adaptation) | **Independently measures** each proposal against held-out history; different lineage, so it doesn't share the proposer's blind spots. |
 
 Separating "propose" (Learning) from "measure" (Evaluator) from "approve on safety" (Monitor) is what
@@ -64,8 +64,9 @@ Step by step:
    the Evaluator **first** (I13).
 3. **Measure (the robustness step).** The **Evaluator** assembles a held-out evaluation set from the
    [`experience/`](../experience) store — episodes that exhibited the target failure, plus a control
-   set that did not — shadow-applies the proposed change in a read-only sandbox, and measures **both**
-   the benefit (reduction in the target failure) and **regressions** (new failures on the control set).
+   set that did not. For playbooks, the set is filtered by task family, playbook id, and compatible
+   environment profile. The Evaluator shadow-applies the proposed change in a read-only sandbox and
+   measures **both** the benefit (reduction in the target failure) and **regressions** (new failures on the control set).
    It forwards a `measured_improvement` to the Monitor **only** if the benefit clears
    `min_measured_benefit` with **zero** regressions; otherwise it emits `rejected_improvement` with
    the numbers. Measuring on *held-out*
@@ -86,8 +87,21 @@ This is the boundary that keeps "self-improvement" from becoming "self-modificat
 - **May never change:** capabilities/permissions, the constitution, or the strength of any gate — the
   *what the system is allowed to do.*
 
+Playbooks are structured, repeatable task strategies (for example `github_push`, `vercel_deploy`, or
+`supabase_migrate`) with aliases, required environment bindings, preflight checks, steps, verification,
+recovery notes, and known issue refs. They still run through environment-profile target resolution,
+consequence tiers, JIT credentials, Monitor/QC gates, and verification. See [PLAYBOOKS.md](PLAYBOOKS.md).
+
 A mesh that improves can get **better at its job**; it can never **expand its own authority.** That
 asymmetry is the whole point.
+
+## How Nurse differs from self-improvement
+The Nurse is a maintenance role, not a shortcut around this lifecycle. Learning and Evaluator govern
+lessons/playbooks: changes in strategy must still be proposed, measured, and ratified. Nurse triage is
+for harness health: broken graph/card/schema/doc connections, stale derived counts, validator drift, or
+repeated runtime failures that point to the harness itself. Nurse can diagnose and prescribe a
+`repair_manifest`, but Monitor must approve it and Taskmaster must route repairs through normal
+assignments or doc assignments. See [NURSE.md](NURSE.md).
 
 ## Message vocabulary
 | Message | From → To | Meaning |

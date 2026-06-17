@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ProjectContextPayload",
+  "description": "A user-authored, project-level context file (PROJECT_CONTEXT.md) that agents read as background context. Unlike the auto-detected environment_profile, this is hand-edited by the user to capture project stack, deploy targets, conventions, and gotchas. It flows through the normal retrieval path as data, never as instructions.",
+  "type": "object",
+  "required": [
+    "project_id",
+    "project_name",
+    "stack",
+    "deploy_targets",
+    "conventions",
+    "gotchas"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "A stable identifier for this project (e.g. repo slug or workspace name)."
+    },
+    "project_name": {
+      "type": "string",
+      "description": "Human-readable project name."
+    },
+    "stack": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "The technology stack (e.g. 'React', 'Vite', 'TypeScript', 'Supabase', 'Tailwind')."
+    },
+    "deploy_targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["provider", "target"],
+        "additionalProperties": false,
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": ["github", "vercel", "supabase", "azure", "aws", "other"]
+          },
+          "target": { "type": "string", "description": "The target identifier (e.g. owner/repo, project ref, app name)." },
+          "environment": {
+            "type": "string",
+            "enum": ["development", "preview", "staging", "production"]
+          },
+          "notes": { "type": "string" }
+        }
+      },
+      "description": "Where this project deploys. Complements the auto-detected environment_profile; the user confirms intent here."
+    },
+    "db_target": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "provider": { "type": "string", "enum": ["supabase", "postgres", "mysql", "sqlite", "other"] },
+        "ref": { "type": "string", "description": "Project ref or connection name (not the connection string)." },
+        "migrations_path": { "type": "string" }
+      },
+      "description": "Database target if applicable. Store identifiers only, never connection strings or secrets."
+    },
+    "conventions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Project conventions the agent should follow (e.g. 'use named exports', 'prefer server components', 'commit messages are conventional commits')."
+    },
+    "gotchas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["summary"],
+        "additionalProperties": false,
+        "properties": {
+          "summary": { "type": "string", "description": "Short description of the gotcha." },
+          "detail": { "type": "string", "description": "Longer explanation or the fix." },
+          "refs": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Links to lessons, issues, or files."
+          }
+        }
+      },
+      "description": "Known gotchas, pitfalls, or non-obvious constraints. Distinct from runtime lessons in backpacks/ — these are user-authored."
+    },
+    "ci": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "CI workflow files or commands (e.g. '.github/workflows/ci.yml', 'npm test')."
+    },
+    "testing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "framework": { "type": "string", "description": "Test framework (e.g. 'vitest', 'jest', 'pytest')." },
+        "command": { "type": "string", "description": "The command to run tests." },
+        "notes": { "type": "string" }
+      },
+      "description": "Testing setup if applicable."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-form additional context the user wants agents to know."
+    }
+  }
+}

@@ -22,11 +22,67 @@
     "plan": {
       "type": "string"
     },
+    "task_family": {
+      "type": "string",
+      "enum": ["github_push", "vercel_deploy", "supabase_migrate", "generic_workflow"]
+    },
+    "playbook_id": {
+      "type": "string"
+    },
+    "environment_profile_ref": {
+      "type": "string"
+    },
+    "provider_targets": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "preflight_results": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
     "actions": {
       "type": "array",
       "items": {
         "type": "string"
       }
+    },
+    "commands_or_actions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "error_signatures": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "known_issue_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "resolution_summary": {
+      "type": "string"
+    },
+    "verification_result": {
+      "type": "string"
+    },
+    "checkup_id": {
+      "type": "string"
+    },
+    "repair_manifest_id": {
+      "type": "string"
+    },
+    "nurse_trigger_source": {
+      "type": "string",
+      "enum": ["user", "audit", "security"]
+    },
+    "nurse_trigger_outcome": {
+      "type": "string",
+      "enum": ["healthy", "repair_required", "repair_completed", "blocked", "suppressed", "false_positive", "inconclusive"]
+    },
+    "duration_seconds": {
+      "type": "number"
+    },
+    "cost_estimate_usd": {
+      "type": "number"
     },
     "gate_outcomes": {
       "type": "array",

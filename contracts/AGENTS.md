@@ -10,8 +10,9 @@ flow.
 - `envelope.schema.json` — the one MeshEnvelope shape every message must satisfy.
 - `flow.graph.yaml` — every legal edge, the gates on it, and the completeness invariants.
 - `state-machine.md` — every request state and its PASS/FAIL/UNCERTAIN transitions.
-- `schemas/` — one payload schema per graph message type (35 total) plus the `episode` runtime
-    record schema, validated by `tools/validate_mesh.py`.
+- `schemas/` — one payload schema per graph message type (39 total) plus the `episode`,
+    `environment_profile`, and `project_context` off-graph record schemas (42 total), validated by
+    `tools/validate_mesh.py`.
 
 ## Local Contracts
 - No message may travel on any path not declared in `flow.graph.yaml`.
@@ -23,10 +24,13 @@ flow.
 ## Work Guidance
 - Adding a message type: add its `schemas/<type>.schema.json`, add the edge(s) to `flow.graph.yaml`,
   update the sending/receiving cards' `inputs`/`outputs`, then run `tools/validate_mesh.py`.
+- `schemas/project_context.schema.json` is a runtime-retrieved file schema (not a graph message type);
+  it is in the validator's allowed off-graph set alongside `episode` and `environment_profile`.
 
 ## Verification
-- `python tools/validate_mesh.py` — checks invariants I1–I14, exact edge/card coverage, schema
-    coverage, envelope hardening, Security control coverage, and DOX reachability.
+- `python tools/validate_mesh.py` — checks invariants I1–I15, exact edge/card coverage, schema
+    coverage, envelope hardening, Security control coverage, environment/playbook hardening, Nurse
+    trigger/repair hardening, and DOX reachability.
 
 ## Child DOX Index
 - `schemas/` is covered by this parent (per-type payload schemas; no independent contract).

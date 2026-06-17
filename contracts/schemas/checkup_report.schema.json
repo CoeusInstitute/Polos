@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CheckupReportPayload",
+  "description": "Nurse's read-only health report for the harness.",
+  "type": "object",
+  "required": [
+    "checkup_id",
+    "trigger_ref",
+    "status",
+    "severity",
+    "checks_run",
+    "findings",
+    "repair_required",
+    "evidence_refs",
+    "validator_result_ref"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "checkup_id": { "type": "string" },
+    "trigger_ref": { "type": "string" },
+    "status": { "type": "string", "enum": ["healthy", "repair_required", "blocked", "inconclusive"] },
+    "severity": { "type": "string", "enum": ["info", "warning", "repair-needed", "blocked"] },
+    "checks_run": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "area", "severity", "summary", "evidence_refs", "repairable_by"],
+        "additionalProperties": false,
+        "properties": {
+          "finding_id": { "type": "string" },
+          "area": { "type": "string", "enum": ["role", "graph", "schema", "config", "validator", "dox", "docs", "state-machine", "runtime-signal"] },
+          "severity": { "type": "string", "enum": ["info", "warning", "repair-needed", "blocked"] },
+          "summary": { "type": "string" },
+          "evidence_refs": { "type": "array", "items": { "type": "string" } },
+          "recommended_repair": { "type": "string" },
+          "repairable_by": { "type": "string", "enum": ["none", "execution-worker", "archivist", "human"] }
+        }
+      }
+    },
+    "repair_required": { "type": "boolean" },
+    "repair_manifest_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "validator_result_ref": { "type": "string" },
+    "cooldown_decision": { "type": "string" }
+  }
+}

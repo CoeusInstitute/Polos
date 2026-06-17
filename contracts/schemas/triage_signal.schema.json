@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TriageSignalPayload",
+  "description": "A thresholded error or integrity signal that may wake the Nurse.",
+  "type": "object",
+  "required": [
+    "signal_id",
+    "trigger_source",
+    "trigger_reason",
+    "failure_signature",
+    "frequency",
+    "threshold",
+    "cooldown_ref",
+    "evidence_trace_ids",
+    "first_seen_at",
+    "last_seen_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "signal_id": { "type": "string" },
+    "trigger_source": { "type": "string", "enum": ["audit", "security"] },
+    "trigger_reason": { "type": "string" },
+    "failure_signature": { "type": "string" },
+    "frequency": { "type": "integer", "minimum": 2 },
+    "threshold": { "type": "integer", "minimum": 2 },
+    "cooldown_ref": { "type": "string" },
+    "evidence_trace_ids": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "first_seen_at": { "type": "string" },
+    "last_seen_at": { "type": "string" },
+    "affected_areas": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["roles", "graph", "schemas", "config", "validator", "dox", "docs", "state-machine", "runtime-signals", "unknown"] }
+    },
+    "cooldown_expires_at": { "type": "string" }
+  }
+}

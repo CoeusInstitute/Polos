@@ -40,11 +40,13 @@ no safety judgment (that is the Monitor). I forward only what the evidence suppo
 > When the evidence is thin or the result is inconclusive, **reject** — do not pass it through.
 
 ## 3 · Procedure
-1. Read the `proposed_improvement`: its `target_failure`, `hypothesis`, `delta`, and
-   `evidence_trace_ids`.
+1. Read the `proposed_improvement`: its `target_failure`, `hypothesis`, `kind`, `delta`, optional
+   `playbook_delta`, and `evidence_trace_ids`.
 2. Assemble a held-out evaluation set from `experience/` — episodes exhibiting `target_failure` plus a
-   control set that did not — so benefit and regression can both be measured.
-3. Shadow-apply the `delta` in a sandbox and measure:
+   control set that did not — so benefit and regression can both be measured. For playbooks, use
+   episodes with matching `task_family`, `playbook_id`, and compatible `environment_profile_ref`, plus
+   control episodes that should not be changed by the proposed procedure.
+3. Shadow-apply the `delta` or `playbook_delta` in a sandbox and measure:
    - **benefit:** reduction in `target_failure` rate on the held-out set;
    - **regressions:** any new failures introduced on the control set.
 4. Decide:
@@ -57,6 +59,8 @@ no safety judgment (that is the Monitor). I forward only what the evidence suppo
 - Did I check for regressions, not just benefit?
 - Is the benefit real and meaningful, or am I forwarding noise?
 - Did I avoid making a safety call (that stays with the Monitor)?
+- For a playbook, did I verify the change improves task outcomes without masking preflight failures or
+   broadening provider targets?
 
 ## 5 · Output Contract
 `measured_improvement` (only when measured-beneficial, with `measured_benefit`, `regressions: []`, and

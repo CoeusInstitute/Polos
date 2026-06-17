@@ -1,7 +1,7 @@
 # Looping — Safe Loop Engineering
 
-One of the two capabilities that make this mesh more than a security wrapper. (The other is
-[measured self-improvement](SELF-IMPROVEMENT.md).)
+One of the capabilities that make this mesh more than a security wrapper, alongside
+[measured self-improvement](SELF-IMPROVEMENT.md) and [conditional Nurse triage](NURSE.md).
 
 ## What loop engineering is
 Through 2025–2026 the unit of agentic work moved from the keystroke, to the prompt, to the **loop**.

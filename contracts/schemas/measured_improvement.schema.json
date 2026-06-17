@@ -37,7 +37,27 @@
     },
     "delta": {
       "type": "string",
-      "description": "The proposed addition. Append-only in intent."
+      "description": "The proposed addition or summary of a structured playbook delta. Append-only in intent."
+    },
+    "playbook_delta": {
+      "type": "object",
+      "description": "Required when kind=playbook. A structured playbook addition or patch that the Evaluator measured before forwarding.",
+      "required": ["change_type", "task_family"],
+      "additionalProperties": false,
+      "properties": {
+        "playbook_id": { "type": "string" },
+        "change_type": { "type": "string", "enum": ["add", "patch", "retire"] },
+        "task_family": { "type": "string", "enum": ["github_push", "vercel_deploy", "supabase_migrate", "generic_workflow"] },
+        "aliases": { "type": "array", "items": { "type": "string" } },
+        "fields_changed": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["aliases", "preflight_checks", "steps", "verification", "rollback_or_recovery", "known_issue_refs", "required_environment_bindings"]
+          }
+        },
+        "rationale": { "type": "string" }
+      }
     },
     "evidence_trace_ids": {
       "type": "array",
@@ -61,5 +81,11 @@
       "type": "string",
       "description": "The Evaluator's reproducible measurement record (held-out and control set results)."
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "playbook" } }, "required": ["kind"] },
+      "then": { "required": ["playbook_delta"] }
+    }
+  ]
 }

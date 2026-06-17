@@ -16,6 +16,17 @@ edges:
   - {from: router,     to: retrieval-worker, type: retrieval_manifest,   gates: [monitor], on_fail: refuse}
   - {from: retrieval-worker, to: router,      type: retrieval_result,    gates: [monitor], on_fail: refuse}
   - {from: router,     to: taskmaster,       type: task_manifest,        gates: [monitor], on_fail: refuse}
+  - {from: router,     to: nurse,            type: checkup_request,      gates: [monitor], on_fail: refuse}
+
+  # ---- Harness triage path (Nurse, conditional self-healing) ----
+  - {from: audit,      to: nurse,            type: triage_signal,        gates: []}        # thresholded runtime signal, not every error
+  - {from: security,   to: nurse,            type: triage_signal,        gates: []}        # integrity-driven checkup request
+  - {from: nurse,      to: monitor,          type: checkup_report,       gates: []}
+  - {from: nurse,      to: monitor,          type: repair_manifest,      gates: []}
+  - {from: monitor,    to: human,            type: checkup_report,       gates: []}        # TERMINAL: health report
+  - {from: monitor,    to: audit,            type: checkup_report,       gates: []}
+  - {from: monitor,    to: taskmaster,       type: repair_manifest,      gates: []}        # repairs still become normal assignments
+  - {from: monitor,    to: audit,            type: repair_manifest,      gates: []}
 
   # ---- Loop path (Ralph / loop engineering, made safe) ----
   - {from: alpha,           to: loop-controller, type: loop_request,        gates: [monitor], on_fail: refuse}
@@ -63,6 +74,7 @@ edges:
   - {from: security, to: verifier,         type: quarantine, gates: []}
   - {from: security, to: evaluator,        type: quarantine, gates: []}
   - {from: security, to: learning,         type: quarantine, gates: []}
+  - {from: security, to: nurse,            type: quarantine, gates: []}
   - {from: security, to: human,            type: escalation, gates: []}  # TERMINAL: human escalation
   - {from: security, to: audit,            type: verdict,    gates: []}
 
@@ -114,3 +126,5 @@ invariants:
     rule: A proposed_improvement must pass the Evaluator (measured benefit, no regressions) before it can reach the Monitor; no improvement edge bypasses the Evaluator on its way to ratification.
   - id: I14
     rule: Self-improvement commits are append-only and versioned and may add only lessons or playbooks; they may never grant capability, alter the constitution, or weaken a gate.
+  - id: I15
+    rule: "Nurse triage is conditional and read-only: it may diagnose harness drift and propose repairs, but repairs must pass Monitor and execute only through normal Taskmaster assignments/doc assignments; automatic triage requires threshold and cooldown evidence."

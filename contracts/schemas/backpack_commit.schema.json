@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "BackpackCommitPayload",
-  "description": "A ratified, append-only, versioned backpack mutation: add a lesson/playbook or retire one. Never deletes history.",
+  "description": "A ratified, append-only, versioned backpack mutation: add a lesson/playbook or retire one. Never deletes history and never grants capability.",
   "type": "object",
   "required": [
     "target_role",
@@ -12,31 +12,117 @@
   ],
   "additionalProperties": false,
   "properties": {
-    "target_role": {
-      "type": "string"
-    },
+    "target_role": { "type": "string" },
     "action": {
       "type": "string",
-      "enum": [
-        "add",
-        "retire"
-      ],
+      "enum": ["add", "retire"],
       "description": "'add' appends a lesson/playbook; 'retire' appends a tombstone disabling a prior one. History is never deleted."
     },
     "kind": {
       "type": "string",
-      "enum": [
-        "lesson",
-        "playbook"
-      ],
-      "description": "Required when action=add. A heuristic (lesson) or a reusable task strategy (playbook) \u2014 never a capability or constraint change."
+      "enum": ["lesson", "playbook"],
+      "description": "Required when action=add. A heuristic (lesson) or a reusable task strategy (playbook) — never a capability or constraint change."
     },
     "lesson": {
       "type": "string",
-      "description": "Required when action=add."
+      "description": "Required when action=add and kind=lesson."
     },
-    "lesson_id": {
-      "type": "string"
+    "lesson_id": { "type": "string" },
+    "playbook_id": { "type": "string" },
+    "playbook": {
+      "type": "object",
+      "description": "Required when action=add and kind=playbook. A safe strategy template; it never grants credentials or bypasses gates.",
+      "required": [
+        "name",
+        "aliases",
+        "task_family",
+        "required_environment_bindings",
+        "preflight_checks",
+        "steps",
+        "verification",
+        "consequence_class"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "aliases": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "task_family": {
+          "type": "string",
+          "enum": ["github_push", "vercel_deploy", "supabase_migrate", "generic_workflow"]
+        },
+        "required_environment_bindings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["github_target", "vercel_target", "supabase_target", "package_scripts", "ci", "tool_boundary"]
+          },
+          "minItems": 1
+        },
+        "preflight_checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["check_id", "command_or_probe", "expected_result"],
+            "additionalProperties": false,
+            "properties": {
+              "check_id": { "type": "string" },
+              "command_or_probe": { "type": "string" },
+              "expected_result": { "type": "string" }
+            }
+          },
+          "minItems": 1
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["step_id", "goal", "expected_evidence", "consequence_class"],
+            "additionalProperties": false,
+            "properties": {
+              "step_id": { "type": "string" },
+              "goal": { "type": "string" },
+              "tools": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "scope_hint": { "type": "string" },
+              "expected_evidence": { "type": "string" },
+              "consequence_class": {
+                "type": "string",
+                "enum": ["read", "write-internal", "external-write", "comms", "financial", "code-exec", "docs"]
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "verification": {
+          "type": "object",
+          "required": ["command_or_probe", "expected_result"],
+          "additionalProperties": false,
+          "properties": {
+            "command_or_probe": { "type": "string" },
+            "expected_result": { "type": "string" }
+          }
+        },
+        "approval_required": {
+          "type": "string",
+          "enum": ["none", "security", "human"]
+        },
+        "consequence_class": {
+          "type": "string",
+          "enum": ["read", "write-internal", "external-write", "comms", "financial", "code-exec", "docs"]
+        },
+        "rollback_or_recovery": { "type": "string" },
+        "known_issue_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "last_verified_against": { "type": "string" }
+      }
     },
     "version": {
       "type": "integer",
@@ -44,30 +130,29 @@
     },
     "supersedes_lesson_id": {
       "type": "string",
-      "description": "For action=retire: the lesson being disabled."
+      "description": "For action=retire: the lesson or playbook being disabled."
     },
     "ratified_by": {
       "type": "string",
-      "enum": [
-        "security",
-        "human"
-      ]
+      "enum": ["security", "human"]
     },
     "evidence_trace_ids": {
       "type": "array",
-      "items": {
-        "type": "string"
-      },
+      "items": { "type": "string" },
       "minItems": 1
     }
   },
   "allOf": [
     {
-      "if": { "properties": { "action": { "const": "add" } } },
+      "if": { "properties": { "action": { "const": "add" }, "kind": { "const": "lesson" } }, "required": ["action", "kind"] },
       "then": { "required": ["kind", "lesson", "lesson_id"] }
     },
     {
-      "if": { "properties": { "action": { "const": "retire" } } },
+      "if": { "properties": { "action": { "const": "add" }, "kind": { "const": "playbook" } }, "required": ["action", "kind"] },
+      "then": { "required": ["kind", "playbook", "playbook_id"] }
+    },
+    {
+      "if": { "properties": { "action": { "const": "retire" } }, "required": ["action"] },
       "then": { "required": ["supersedes_lesson_id"] }
     }
   ]

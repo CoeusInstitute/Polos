@@ -22,9 +22,33 @@ instruction files and a human approves consequential steps.
   human granting tool access for that turn is the credential.
 - **Audit** -> append each envelope + verdict to an append-only file (e.g. `audit/run.jsonl`,
   git-ignored).
+- **Environment profile** -> record `host_kind: vscode-copilot`, OS/shell, workspace roots, git
+  remotes, `.github/workflows`, package scripts, `.vercel/` or `vercel.json`, and
+  `supabase/config.toml` if present. Store only target identifiers and variable names. When multiple
+  remotes or provider configs exist, mark the target ambiguous and ask the human before running a
+  shorthand playbook.
+- **Tool inventory** -> populate the profile's `available_tools` from what the host exposes: enabled
+  chat-mode tools, installed VS Code extensions (e.g. `github.copilot-chat`, the Stripe extension),
+  connected MCP servers (`mcp:supabase`, `mcp:github`), and CLIs on PATH (`git`, `gh`, `vercel`,
+  `supabase`, `az`, `docker`, `stripe`). Record each tool's `kind`, highest `consequence_class`, the
+  enforcement point (the Copilot chat-mode tool toggle / human approval turn), and required secret
+  variable **names** only. The Taskmaster grants from this list; the Nurse audits it.
+- **Playbooks** -> expose ratified backpack playbooks as shorthand-safe procedures: e.g. "push to
+  GitHub" first confirms the active remote and branch from the environment profile, then runs preflight,
+  commit/push, remote verification, and audit logging through the normal gated workflow.
+- **Nurse** -> implement as a read-only checkup mode. It can inspect repo files, diagnostics, validator
+  output, audit summaries, and experience episodes, but it cannot edit. Any `repair_manifest` becomes
+  normal Copilot work through Taskmaster/Execution Worker or an Archivist doc pass with Monitor/QC
+  review.
 
 ## Minimum viable enforcement
 1. Decider and oversight chat modes have no effectful tools enabled.
 2. `constitution/core.md` is loaded read-only and referenced by every mode.
 3. Oversight turns use a different model than execution turns where the platform allows model choice.
+  Copilot is effectively single-provider, so apply the single-provider guidance in `models.yaml`:
+  keep oversight on a different model *family* than the workers, and if only one family is available,
+  flag the relaxed anti-correlation guarantee in the environment profile for human acknowledgment.
 4. Consequential tools require a human approval turn (default-block otherwise).
+5. A redacted environment profile exists and is fresh enough for any shorthand task alias being used.
+6. Nurse checkups run only on explicit user request or thresholded Security/audit evidence; do not run
+  them automatically in every chat turn.

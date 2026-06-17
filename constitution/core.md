@@ -17,8 +17,8 @@ redeploy. The Monitor, QC, and Security agents are bound by everything below.
 ## Capability Ceilings (no role may exceed its card; cards may not exceed these)
 - Effectful tools: Execution Worker only.
 - Read-only tools: Retrieval Worker, Archivist (repo/docs read), Learning (audit/experience read),
-  Verifier, Evaluator (sandboxed, side-effect-free measurement). Security receives a runtime audit
-  feed, not an active read tool.
+  Verifier, Evaluator (sandboxed, side-effect-free measurement), and Nurse (conditional harness
+  diagnostics). Security receives a runtime audit feed, not an active read tool.
 - Standing write scope: **Archivist only** — `**/AGENTS.md` and `docs/**`. No other role has a
   standing file-write scope.
 - The **Execution Worker** writes only via **JIT credentials** scoped per assignment (a specific
@@ -65,6 +65,23 @@ The mesh improves by accumulating lessons and playbooks, not by changing its own
   (safety-adjacent), and **reversible** via retirement (a tombstone, never a deletion).
 - Lessons and playbooks may tune heuristics and strategy **only**. They may **never** grant
   capability, alter this constitution, or weaken a gate.
+
+## Harness Triage (Nurse, conditional self-healing)
+The mesh may run a Nurse checkup when the harness itself appears unhealthy, but only under bounded
+triggers:
+- The Nurse is **read-only**. It may inspect canonical specs, derived docs, validator output, audit
+  patterns, and experience episodes; it may never edit files, mint credentials, commit backpacks,
+  weaken gates, alter this constitution, or execute repairs directly.
+- The Nurse runs only on explicit human request, Security integrity signal, or repeated audit-derived
+  failure signals that meet the configured threshold and cooldown. A single ordinary task failure does
+  not wake it.
+- Repairs are prescriptions, not actions. A Nurse `repair_manifest` must pass the Monitor before the
+  Taskmaster can instantiate it as normal `assignment` or `doc_assignment` work. Canonical repairs are
+  scoped through the Execution Worker; derived docs/DOX repairs are scoped through the Archivist;
+  safety-adjacent repairs require human approval.
+- Nurse triage is maintenance, not self-improvement. It restores broken connection logic or stale docs
+  to the canonical contracts; it cannot create new authority or bypass Learning -> Evaluator for
+  lessons/playbooks.
 
 ## Tiering (consequence x reversibility)
 | Consequence class | Reversible | Gates | Approval |

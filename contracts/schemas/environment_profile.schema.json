@@ -1,0 +1,176 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EnvironmentProfilePayload",
+  "description": "A runtime-derived, redacted profile of the host, workspace, provider targets, scripts, approvals, and tool boundary used to safely match repeatable task playbooks. Secrets are never stored.",
+  "type": "object",
+  "required": [
+    "profile_id",
+    "workspace_id",
+    "observed_at",
+    "adapter_id",
+    "host_kind",
+    "os",
+    "workspace_roots",
+    "tool_boundary",
+    "approval_policy",
+    "secret_names_only",
+    "evidence_trace_id",
+    "freshness_status"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "profile_id": { "type": "string" },
+    "workspace_id": { "type": "string" },
+    "observed_at": { "type": "string", "format": "date-time" },
+    "adapter_id": { "type": "string" },
+    "host_kind": {
+      "type": "string",
+      "enum": [
+        "vscode-copilot",
+        "codex",
+        "claude-code",
+        "cursor",
+        "langgraph",
+        "generic",
+        "other"
+      ]
+    },
+    "os": { "type": "string" },
+    "shell": { "type": "string" },
+    "workspace_roots": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "repo_remotes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "url", "default"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "url": { "type": "string" },
+          "default": { "type": "boolean" }
+        }
+      }
+    },
+    "github_target": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "owner": { "type": "string" },
+        "repo": { "type": "string" },
+        "default_branch": { "type": "string" },
+        "remote": { "type": "string" },
+        "ambiguous": { "type": "boolean" }
+      }
+    },
+    "vercel_target": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "project": { "type": "string" },
+        "team": { "type": "string" },
+        "config_files": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "ambiguous": { "type": "boolean" }
+      }
+    },
+    "supabase_target": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "project_ref": { "type": "string" },
+        "config_files": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "migrations_path": { "type": "string" },
+        "ambiguous": { "type": "boolean" }
+      }
+    },
+    "package_manager": { "type": "string" },
+    "scripts": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "ci": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "available_tools": {
+      "type": "array",
+      "description": "Runtime-detected inventory of the effectful and read-only tools the host exposes (CLIs, IDE extensions, MCP servers, scripts) that the Taskmaster may grant from and the Nurse may audit. Detection-derived like the rest of the profile; no agent edits it by hand. Lists tool identifiers and required secret variable NAMES only — never secret values.",
+      "items": {
+        "type": "object",
+        "required": ["name", "kind", "consequence_class"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Stable identifier for the tool, e.g. 'git', 'gh', 'vercel', 'supabase', 'docker', 'github.copilot-chat', 'mcp:supabase'."
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["cli", "extension", "mcp", "script", "builtin"]
+          },
+          "consequence_class": {
+            "type": "string",
+            "description": "Highest consequence class this tool can reach, aligned with the constitution tiering table.",
+            "enum": ["read", "docs", "write-internal", "comms", "external-write", "code-exec", "financial"]
+          },
+          "enforcement": {
+            "type": "string",
+            "description": "How the adapter denies/grants this tool by role (e.g. 'copilot chat-mode tool toggle', 'function-call allow-list', 'human approval turn')."
+          },
+          "secret_names": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Variable NAMES this tool requires (e.g. OPENROUTER_API_KEY, STRIPE_SECRET_KEY). Never values."
+          },
+          "ambiguous": {
+            "type": "boolean",
+            "description": "True if the tool is detected but its target/scope is ambiguous; a playbook must fail closed until resolved."
+          }
+        }
+      }
+    },
+    "tool_boundary": {
+      "type": "object",
+      "required": ["can_deny_tools_by_role", "enforcement_point"],
+      "additionalProperties": false,
+      "properties": {
+        "can_deny_tools_by_role": { "type": "boolean" },
+        "enforcement_point": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "approval_policy": {
+      "type": "object",
+      "required": ["external_write", "code_exec", "financial"],
+      "additionalProperties": false,
+      "properties": {
+        "external_write": { "type": "string", "enum": ["none", "security", "human"] },
+        "code_exec": { "type": "string", "enum": ["none", "security", "human"] },
+        "financial": { "type": "string", "enum": ["none", "security", "human"] }
+      }
+    },
+    "secret_names_only": {
+      "type": "boolean",
+      "const": true,
+      "description": "Must be true. Environment profiles may list required variable names but never secret values."
+    },
+    "secret_names": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "evidence_trace_id": { "type": "string" },
+    "freshness_status": {
+      "type": "string",
+      "enum": ["fresh", "stale", "ambiguous"]
+    }
+  }
+}

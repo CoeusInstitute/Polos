@@ -11,6 +11,10 @@ guarantee. The default on UNCERTAIN or a gate being unavailable is **BLOCK** (fa
 | RECEIVED | Alpha accepts a `user_request` | INTENT_RESOLVED | REFUSED | REFUSED |
 | INTENT_RESOLVED | Alpha emits `request_manifest`, Monitor gates it | ROUTING | REFUSED | BLOCKED |
 | ROUTING | Router builds retrieval + agent shortlist | GATHERING | REFUSED | BLOCKED |
+| CHECKUP_ROUTING | Router emits `checkup_request`, Monitor gates it | CHECKING_HARNESS | REFUSED | BLOCKED |
+| CHECKING_HARNESS | Nurse runs read-only diagnostics | CHECKUP_REVIEW | BLOCKED | BLOCKED |
+| CHECKUP_REVIEW | Monitor reviews `checkup_report` and optional `repair_manifest` | REPAIR_PLANNING or RESPONDING | BLOCKED | BLOCKED |
+| REPAIR_PLANNING | Taskmaster scopes a Monitor-passed `repair_manifest` into normal assignments/doc assignments | EXECUTING | REFUSED | BLOCKED |
 | GATHERING | Retrieval Worker returns context, Monitor scrubs it | PLANNING | REFUSED | BLOCKED |
 | PLANNING | Taskmaster plans, scopes assignments + JIT creds | EXECUTING | REFUSED | BLOCKED |
 | EXECUTING | Worker runs an assignment | SAFETY_GATE | BLOCKED | BLOCKED |
@@ -45,3 +49,6 @@ guarantee. The default on UNCERTAIN or a gate being unavailable is **BLOCK** (fa
 - **Every transition is logged** to the audit store with the request `trace_id`.
 - **The doc lifecycle mirrors this**: doc_change -> SAFETY_GATE -> QUALITY_GATE -> committed, with
   doc_rework as its bounded rework loop.
+- **The Nurse lifecycle is conditional**: checkup_request/triage_signal -> Nurse read-only diagnostics
+  -> Monitor review -> either human/audit report or a Monitor-passed repair_manifest routed through
+  normal Taskmaster assignments/doc assignments. Nurse never repairs directly.

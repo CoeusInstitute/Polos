@@ -18,6 +18,16 @@ How to realize the mesh on a graph-based agent runner (LangGraph or similar).
   Execution node's tool wrapper rejects tools/paths not granted or past expiry.
 - **Audit** -> a side-effecting sink node (or callback) appends every state transition and verdict to
   an append-only, hash-chained store.
+- **Environment profile** -> a startup/refresh node performs read-only probes for workspace roots,
+  git remotes, package scripts, CI, and provider config files, then writes a redacted
+  `environment_profile` runtime record. The graph state carries `environment_profile_ref` for
+  playbook matching. Ambiguous targets route to BLOCK or human selection.
+- **Playbooks** -> ratified backpack playbooks are read-only graph state. Router nodes may match
+  aliases, but Taskmaster nodes still expand steps into normal gated assignments with preflight,
+  JIT credentials, verification, and audit logging.
+- **Nurse** -> a read-only diagnostic node. Route `checkup_request` and thresholded `triage_signal` to
+  it; route `checkup_report` and `repair_manifest` to Monitor. Conditional edges must prevent direct
+  Nurse-to-worker repair and must enforce cooldown before audit-triggered checkups.
 
 ## Minimum viable enforcement
 1. Tool binding is per-node; decider and oversight nodes bind zero effectful tools.
@@ -25,3 +35,5 @@ How to realize the mesh on a graph-based agent runner (LangGraph or similar).
 3. Oversight nodes use a different model than worker nodes (`models.yaml`).
 4. Conditional edges default to BLOCK when a gate is uncertain or unavailable.
 5. Run `tools/validate_mesh.py` in CI so graph edits can't drift from the contracts.
+6. Environment-profile nodes store provider identifiers and secret names only; never secret values.
+7. Nurse nodes bind no effectful tools and cannot write graph state except report/manifest envelopes.

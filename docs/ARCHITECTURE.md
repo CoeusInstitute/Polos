@@ -17,7 +17,7 @@ unsupervised.
 > Anything that can decide cannot act, and anything that can act cannot act unsupervised.
 
 That is separation of powers, least privilege, and defense in depth applied to cognition. On top of
-that base sit the two capabilities that make the mesh genuinely novel rather than merely safe:
+that base sit the capabilities that make the mesh genuinely novel rather than merely safe:
 
 - **[Looping](LOOPING.md)** — run a task as a bounded, externally verified loop (the loop-engineering /
   Ralph pattern) without the infinite loops, goal drift, or cost blow-ups that make naïve loops
@@ -25,9 +25,12 @@ that base sit the two capabilities that make the mesh genuinely novel rather tha
 - **[Self-improvement](SELF-IMPROVEMENT.md)** — get better over time by accumulating *measured,
   reversible* lessons, evaluated by a different model than the one being improved, so the system never
   rewrites its own rules or expands its own permissions.
+- **[Nurse triage](NURSE.md)** — run conditional harness checkups when a user asks, Security flags an
+  integrity concern, or repeated audit errors cross threshold/cooldown; Nurse diagnoses only, and
+  repairs still flow through the normal gated actors.
 
-The same topological discipline that contains an untrusted model is what makes both of those safe to
-turn on.
+The same topological discipline that contains an untrusted model is what makes those capabilities safe
+to turn on.
 
 ## Planes
 ```mermaid
@@ -56,6 +59,7 @@ flowchart TB
     subgraph ADAPT["Adaptation"]
         L[Learning<br/>propose only]
         E[Evaluator<br/>measure, read-only]
+      N[Nurse<br/>conditional triage]
     end
 
     H --> A --> R --> T
@@ -74,6 +78,9 @@ flowchart TB
     Q -. iteration_result .-> LC
     S -. halt / quarantine .-> EXEC
     L --> E --> M
+    R -. checkup_request .-> N
+    AU[(Audit)] -. triage_signal .-> N
+    N -. report / repair manifest .-> M
     S --> H
 ```
 
@@ -172,6 +179,61 @@ Splitting *propose* (Learning) from *measure* (Evaluator) from *approve* (Monito
 mitigation for **degeneration of thought** — a model reflecting on its own reasoning and reinforcing its
 own mistakes. No role can both invent a lesson and bless it.
 
+## Environment profiles and task playbooks
+Polos also records a redacted runtime **environment profile** so shorthand operational requests can be
+safe instead of magical. The profile captures host kind, OS/shell, workspace roots, git remotes,
+provider targets (GitHub, Vercel, Supabase), package scripts, CI, approval policy, and tool-boundary
+facts. It stores secret variable names only, never secret values.
+
+Ratified `kind: playbook` backpack entries are reusable task strategies. The Router may match aliases
+such as "push to GitHub" only when the active environment profile has every required target and no
+ambiguity. The Taskmaster then instantiates the playbook into ordinary assignments: preflight first,
+then scoped JIT credentials, consequence-tier approval, Monitor/QC gates, and objective verification.
+Failures and recoveries return to audit and experience so Learning can propose measured playbook
+patches.
+
+```mermaid
+flowchart LR
+  EP[(environment profile<br/>redacted)] --> R[Router<br/>match alias]
+  BP[(backpacks<br/>ratified playbooks)] --> R
+  R -->|task_manifest<br/>playbook_ref + environment_profile_ref| T[Taskmaster]
+  T -->|preflight + step assignments| EW[Execution Worker]
+  EW --> M{{Monitor}}
+  M --> Q{{QC + Verifier}}
+  Q --> AU[(audit)]
+  AU --> EX[(experience)]
+  EX --> L[Learning]
+```
+
+Full detail in [PLAYBOOKS.md](PLAYBOOKS.md).
+
+## Nurse triage (conditional self-healing)
+The Nurse is a read-only maintenance role for the harness itself. It wakes only on explicit user
+checkup request, Security integrity signal, or a thresholded audit pattern with cooldown evidence. It
+checks role cards, model bindings, config, flow graph edges, schemas, state machine, validator
+expectations, DOX indexes, docs, and audit/experience patterns. It then emits a `checkup_report` and,
+only if needed, a `repair_manifest`.
+
+```mermaid
+flowchart LR
+  U([user: check harness]) --> R[Router]
+  AU[(audit threshold)] --> N[Nurse<br/>read-only]
+  SEC[Security] --> N
+  R -->|checkup_request| N
+  N -->|checkup_report| M{{Monitor}}
+  N -->|repair_manifest| M
+  M -->|report| H([human + audit])
+  M -->|safe repair prescription| T[Taskmaster]
+  T --> EW[Execution Worker]
+  T --> AR[Archivist]
+  EW --> M2{{Monitor -> QC}}
+  AR --> M2
+```
+
+This is self-healing without self-authorizing: the Nurse can find broken connections and prescribe a
+minimal repair, but it cannot write files, mint credentials, edit backpacks, or bypass Monitor/QC. Full
+detail in [NURSE.md](NURSE.md).
+
 ## Looping (bounded, externally verified)
 Work can run as a self-correcting loop rather than a single pass, driven by the tool-less **Loop
 Controller**. Every loop carries explicit budgets and an **externally verifiable** stop condition
@@ -193,6 +255,8 @@ pattern with the guardrails that make it safe to leave running. Full detail in [
 | T8 — Cost / token explosion | Cost budget is a hard ceiling; `no_progress_patience` stops a loop that spins without measurable, verified progress. |
 | T9 — Degeneration of thought in self-improvement | The Evaluator that measures a proposal is a different model lineage than the Learning agent that proposed it; propose / measure / approve are three separate roles (I13). |
 | T10 — A faked "done" ends a loop early | Stop conditions are verified by the Verifier through QC, never self-reported; a loop with no externally checkable done-test is rejected. |
+| T11 — A shorthand task acts on the wrong provider target | Router may match a playbook only when `environment_profile` supplies a fresh, unambiguous target; ambiguous GitHub/Vercel/Supabase bindings fail closed. |
+| T12 — Harness drift accumulates silently | Nurse runs only on explicit checkup, Security signal, or thresholded audit pattern; it diagnoses read-only and routes repair manifests through Monitor and Taskmaster. |
 
 ## What this does not solve
 - It does not make a base model aligned; it contains an imperfect one.

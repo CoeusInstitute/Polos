@@ -32,6 +32,16 @@
       "items": {
         "type": "string"
       }
+    },
+    "task_family": {
+      "type": "string",
+      "enum": ["github_push", "vercel_deploy", "supabase_migrate", "generic_workflow"]
+    },
+    "playbook_ref": {
+      "type": "string"
+    },
+    "environment_profile_ref": {
+      "type": "string"
     }
   }
 }

@@ -5,6 +5,18 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+### Added
+- **Conditional Nurse triage.** Added a read-only Nurse role for harness checkups and thresholded
+  self-healing: user-requested checkups, Security integrity signals, and repeated audit patterns can
+  trigger read-only diagnostics. Nurse emits `checkup_report` and `repair_manifest`; repairs still pass
+  Monitor and execute only through normal Taskmaster assignments or Archivist doc assignments.
+- **Environment profiles and repeatable task playbooks.** The runtime now has a redacted
+  `environment_profile` record for host/provider target detection and structured, ratified
+  `kind: playbook` backpack entries for shorthand tasks such as pushing to GitHub, deploying to
+  Vercel, or applying Supabase migrations. Playbooks remain strategy only: they require fresh target
+  evidence, preflight, consequence-tier approval, JIT credentials, Monitor/QC gates, verification, and
+  audit/experience capture.
+
 ### Changed
 - **Renamed the project to "Polos"** (was "Agent Mesh"). Internal `mesh` / `MeshEnvelope` terms are
   retained as descriptive vocabulary for the agent topology Polos builds.
@@ -19,15 +31,16 @@ All notable changes to this project are documented here. The format follows
   `fresh_context: true` const, `iteration_result` requires `verified_evidence`, and `loop_complete`
   requires `ledger_ref`.
 - **I14 is partly mechanical.** The validator now asserts the improvement/backpack `kind` is
-  restricted to `lesson` | `playbook`, so a commit cannot express a capability or constraint change.
+  restricted to `lesson` | `playbook`, validates structured playbook fields, and rejects
+  authority-changing playbook field names.
 - Clarified that the **Loop Controller is a tool-less decider** (root `AGENTS.md`, constitution,
   generic adapter), that **Security has no self-halt edge** and is governed by the external human kill
   switch (I8, constitution §Control Signals), and that **tiered approvals are a credential/tool
   activation precondition**, not a separate graph edge (constitution §Tiering).
 
 ### Fixed
-- Aligned derived docs and counts with the canonical specs: the mesh is now **thirteen agents,
-  55 edges, 35 graph message types, 36 schemas** (342 structural checks).
+- Aligned derived docs and counts with the canonical specs: the mesh is now **fourteen agents,
+  65 edges, 39 graph message types, 42 schemas** (419 structural checks).
 
 ## [0.2.0] — 2026-06-16
 ### Added

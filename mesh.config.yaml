@@ -15,6 +15,7 @@ roles_enabled:
   learning: true           # set false to freeze self-improvement entirely
   loop-controller: true    # set false to disable looped execution (single-pass only)
   evaluator: true          # measures improvement proposals before ratification (keep on if learning is on)
+  nurse: true              # conditional harness triage/checkup; read-only and threshold-triggered
 
 # Tiered oversight maps a consequence class to required gates + approvals.
 # (The canonical policy is constitution/core.md §Tiering; this mirrors it for the runner.)
@@ -47,3 +48,12 @@ limits:
     max_regressions: 0           # any regression on the control set blocks the proposal
     eval_min_sample: 20          # minimum held-out episodes before a measured verdict is trusted
     commits_append_only: true    # lessons/playbooks are versioned and reversible, never deleted
+
+  # Harness triage (Nurse). Explicit user/Security checkups are allowed; automatic runs require a
+  # repeated signal plus cooldown so the Nurse does not become a per-request tax.
+  nurse:
+    min_error_signal_count: 3
+    cooldown_seconds: 3600
+    max_checkup_depth: full
+    require_user_or_security_trigger: true
+    auto_repair_consequence_ceiling: docs

@@ -21,8 +21,9 @@ of any single model.
   **Authoritative for all inter-agent flow.**
 - `oversight/` owns the three guardian policies (Monitor, QC, Security).
 - `models.yaml` owns model binding for every role.
-- `backpacks/`, `audit/` own runtime-written lessons and the append-only log.
+- `backpacks/`, `audit/` own runtime-written lessons/playbooks and the append-only log.
 - `loops/` owns runtime loop ledgers; `experience/` owns the runtime episode store for measured self-improvement.
+- `environment/` owns redacted runtime environment profiles used to match safe repeatable task playbooks.
 - `adapters/` owns stack-specific bootstrap notes (additive only).
 - `docs/` owns human-facing material. **Derived** — never authoritative.
 
@@ -42,6 +43,15 @@ of any single model.
 - **Corrigible.** The mesh accepts halt and correction without resisting or self-preserving.
 - **Loops are bounded.** A looped goal declares budgets and an externally verifiable stop condition checked by the Verifier; the Loop Controller holds no tools; Security can HALT a runaway loop.
 - **Self-improvement is measured.** Proposed lessons/playbooks must pass the Evaluator (benefit, no regressions) before ratification, are append-only and versioned, and can never grant capability or weaken a constraint.
+- **Nurse triage is conditional.** The Nurse is read-only and wakes only on explicit checkup request,
+  Security integrity signal, or thresholded audit pattern. It diagnoses harness drift and emits repair
+  manifests; repairs execute only through normal Monitor-reviewed Taskmaster assignments/doc assignments.
+- **Environment profiles are redacted.** Host/tool/provider facts may be recorded for playbook matching,
+  but secrets never are. Ambiguous provider targets fail closed until a human resolves them.
+- **Project context is user-authored.** `PROJECT_CONTEXT.md` at the repo root is hand-edited by the
+  user to capture project stack, deploy targets, conventions, and gotchas. The Router retrieves it as
+  background data (Monitor-scrubbed); it is context, never authority — it cannot grant capability,
+  change gates, or weaken the constitution.
 
 ## Work Guidance
 - Treat `constitution/core.md` as read-only at runtime. Changes happen out-of-band by a human,
@@ -55,7 +65,7 @@ of any single model.
 - Structure/flow: run `python tools/validate_mesh.py` (also wired into CI). It checks the
   completeness invariants in `contracts/flow.graph.yaml` — card-vs-graph consistency in both
   directions, a payload schema for every message type, model-registry sanity, capability ceilings,
-  and DOX index reachability. All must pass before going live.
+  Nurse trigger/repair routing, and DOX index reachability. All must pass before going live.
 - Documentation: the Archivist's closeout must report a fully reachable `AGENTS.md` tree with no
   stale indexes and no doc/source contradictions.
 - Behavior: run a dry-run request through the state machine (`contracts/state-machine.md`) and
@@ -74,8 +84,9 @@ keeps them current, schema-conformant (DOX Child Doc Shape), and reachable from 
 - `roles/AGENTS.md` — Owns the canonical agent roster, capability matrix, and the agent-card template.
 - `contracts/AGENTS.md` — Owns the message envelope, the complete flow graph, and the state machine.
 - `oversight/AGENTS.md` — Owns the Monitor, QC, and Security guardian policies.
-- `backpacks/AGENTS.md` — Owns append-only per-role lesson stores (runtime-written).
+- `backpacks/AGENTS.md` — Owns append-only per-role lesson/playbook stores (runtime-written).
 - `audit/AGENTS.md` — Owns the append-only, hash-chained event log (runtime-written).
+- `environment/AGENTS.md` — Owns redacted runtime environment profiles for host and provider target detection.
 - `adapters/AGENTS.md` — Owns stack-specific bootstrap notes (additive).
 - `docs/AGENTS.md` — Owns human-facing, derived documentation.
 - `tools/AGENTS.md` — Owns the structural validator and CI tooling.

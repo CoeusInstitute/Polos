@@ -34,6 +34,28 @@
         "code-exec",
         "docs"
       ]
+    },
+    "playbook_ref": {
+      "type": "string"
+    },
+    "playbook_step_ref": {
+      "type": "string"
+    },
+    "environment_profile_ref": {
+      "type": "string"
+    },
+    "preflight_checks": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "verification": {
+      "type": "string"
+    },
+    "repair_manifest_ref": {
+      "type": "string"
+    },
+    "repair_item_ref": {
+      "type": "string"
     }
   }
 }

@@ -19,6 +19,42 @@
       "items": {
         "type": "string"
       }
+    },
+    "structured_patterns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["task_family", "failure_signature", "frequency"],
+        "additionalProperties": false,
+        "properties": {
+          "task_family": { "type": "string", "enum": ["github_push", "vercel_deploy", "supabase_migrate", "generic_workflow"] },
+          "playbook_id": { "type": "string" },
+          "environment_profile_ref": { "type": "string" },
+          "failure_signature": { "type": "string" },
+          "frequency": { "type": "integer", "minimum": 1 },
+          "affected_hosts": { "type": "array", "items": { "type": "string" } },
+          "resolved_by_trace_ids": { "type": "array", "items": { "type": "string" } },
+          "candidate_playbook_delta": { "type": "string" }
+        }
+      }
+    },
+    "triage_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["failure_signature", "frequency", "threshold", "cooldown_ref", "evidence_trace_ids"],
+        "additionalProperties": false,
+        "properties": {
+          "failure_signature": { "type": "string" },
+          "frequency": { "type": "integer", "minimum": 2 },
+          "threshold": { "type": "integer", "minimum": 2 },
+          "cooldown_ref": { "type": "string" },
+          "evidence_trace_ids": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "affected_areas": { "type": "array", "items": { "type": "string" } },
+          "last_nurse_checkup_ref": { "type": "string" },
+          "cooldown_expires_at": { "type": "string" }
+        }
+      }
     }
   }
 }

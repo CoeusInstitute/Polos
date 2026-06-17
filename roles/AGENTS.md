@@ -30,8 +30,9 @@ must match them.
 | monitor | oversight | no | no | none | no | review | **reject** | **trusted-diverse** |
 | qc | oversight | no | no | none | no | none | **rework** | **trusted-diverse** |
 | security | oversight | no | passive verdict/audit feed only | none | no | ratify | **HALT** | **trusted-diverse** |
-| learning | adaptation | no | read audit | none | no | **propose** | none | worker |
+| learning | adaptation | no | read audit/experience | none | no | **propose** | none | worker |
 | evaluator | adaptation | no | **read-only (sandbox)** | none | no | none | none | **trusted-diverse** |
+| nurse | adaptation | no | read repo/audit/experience + validator | none | no | none | none | worker |
 
 Two structural guarantees: exactly one column (effectful tools) can affect the world, held only by
 the Execution Worker; the veto/HALT column is held only by tool-less guardians and the human.
@@ -40,7 +41,7 @@ Security's verdict/audit feed is passive runtime input, not an active read tool.
 ## Work Guidance
 - New role -> copy `_TEMPLATE.agent.md`, fill the contract, add its edges to `flow.graph.yaml`, add
   a binding to `models.yaml`, then have the Archivist refresh this roster.
-- All thirteen roles are fully specified as cards in this directory. Each card's `inputs`, `outputs`,
+- All fourteen roles are fully specified as cards in this directory. Each card's `inputs`, `outputs`,
   and `handoffs` are derived directly from `contracts/flow.graph.yaml`; keep the two in sync when
   either changes.
 - After editing YAML front matter in a role card, run `python tools/validate_mesh.py`; nested

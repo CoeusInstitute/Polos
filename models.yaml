@@ -2,45 +2,117 @@
 # Change a model HERE, in one place, and every agent of that role picks it up.
 # IDs are explicit provider/model strings. No hidden tiers, no opaque abstraction.
 #
-# NOTE: the IDs below are EXAMPLES. Replace them with the current slugs valid for your
-# OpenRouter (or other gateway) account before running.
+# NOTE: the IDs below are EXAMPLES using current OpenRouter slugs. Replace them with
+# the slugs valid for your OpenRouter (or other gateway) account before running.
+# The validator only checks that oversight != worker/decider lineage and
+# learning != evaluator; it does not verify a slug is reachable — that is your
+# gateway's job.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# OpenRouter API key
+# ─────────────────────────────────────────────────────────────────────────────
+# Set OPENROUTER_API_KEY in your environment (or your host's secret store) before
+# running the mesh. The building agent should use the user's presaved key and must
+# never print or commit it. If your host or IDE uses a single provider gateway
+# (e.g. a Claude Code env with only Anthropic, or a Copilot env with only OpenAI),
+# see "Single-provider hosts" below and point the slugs at that gateway instead.
 
 # Active profile. Flip the whole mesh with one value. Overridable via env MESH_PROFILE.
-profile: balanced            # cheap | balanced | max
+profile: balanced            # thinking | balanced | fast
 
-# Profiles bind two CLASSES: `worker` (does work) and `oversight` (guards work).
-# Oversight is deliberately a DIFFERENT model lineage than worker, so a jailbreak that
-# fools an actor does not automatically fool its guardian (anti-correlated-failure).
+# ─────────────────────────────────────────────────────────────────────────────
+# Profiles bind FOUR classes, mapped to three model tiers + diverse oversight:
+#
+#   decider   — big-thinking models for reasoning-heavy roles (Alpha, Router,
+#               Taskmaster, Loop Controller). These plan, decompose, and decide.
+#   worker    — cheaper-thinking models for execution and adaptation roles that
+#               produce work (Execution Worker, Archivist, Learning, Nurse).
+#   fast      — fast-process models for high-throughput, low-latency roles
+#               (Retrieval Worker, Verifier). These fetch and check, not reason.
+#   oversight — a DIFFERENT model lineage than decider/worker, so a jailbreak
+#               that fools an actor does not automatically fool its guardian
+#               (anti-correlated-failure). Also used by the Evaluator so it does
+#               not share the Learning agent's blind spots.
+#
+# Tier reference (substitute current slugs for your account):
+#   big-thinking:     gpt-5.5, claude-opus-4.8
+#   cheaper-thinking: glm-5.2, qwen-3.7-plus
+#   fast-process:     gemma-4, grok-4.3, gpt-5.4-mini
+# ─────────────────────────────────────────────────────────────────────────────
 profiles:
-  cheap:
-    worker:    openrouter/anthropic/claude-3.5-haiku
-    oversight: openrouter/openai/gpt-4o-mini            # different lineage than worker
+  thinking:
+    decider:   openrouter/openai/gpt-5.5             # big-thinking: plans + decides
+    worker:    openrouter/anthropic/claude-opus-4.8  # big-thinking: produces work
+    fast:      openrouter/xai/grok-4.3               # fast-process: retrieval + checks
+    oversight: openrouter/google/gemma-4             # diverse lineage vs decider/worker
   balanced:
-    worker:    openrouter/anthropic/claude-sonnet-4
-    oversight: openrouter/google/gemini-2.0-flash       # different lineage than worker
-  max:
-    worker:    openrouter/anthropic/claude-opus-4
-    oversight: openrouter/openai/gpt-4o                  # different lineage than worker
+    decider:   openrouter/qwen/qwen-3.7-plus         # cheaper-thinking: plans + decides
+    worker:    openrouter/zai/glm-5.2                # cheaper-thinking: produces work
+    fast:      openrouter/google/gemma-4             # fast-process: retrieval + checks
+    oversight: openrouter/xai/grok-4.3               # diverse lineage vs decider/worker
+  fast:
+    decider:   openrouter/openai/gpt-5.4-mini        # fast-process: plans + decides
+    worker:    openrouter/google/gemma-4             # fast-process: produces work
+    fast:      openrouter/xai/grok-4.3               # fast-process: retrieval + checks
+    oversight: openrouter/openai/gpt-5.4-mini        # diverse lineage vs decider/worker
 
+# ─────────────────────────────────────────────────────────────────────────────
 # Per-role binding.
-#   class: worker | oversight   -> inherits the active profile's model for that class
-#   model: <explicit id>        -> OPTIONAL pin; overrides the class default for this role only
+#   class: decider | worker | fast | oversight  -> inherits the active profile's model
+#   model: <explicit id>                         -> OPTIONAL pin; overrides the class
+#                                                  default for this role only
 # Resolution rule: role.model if present, else profiles[active][role.class].
+# ─────────────────────────────────────────────────────────────────────────────
 roles:
-  alpha:            { class: worker }
-  router:           { class: worker }
-  taskmaster:       { class: worker }
-  retrieval-worker: { class: worker }
+  # Deciders — plan, decompose, decide. Big-thinking tier.
+  alpha:            { class: decider }
+  router:           { class: decider }
+  taskmaster:       { class: decider }
+  loop-controller:  { class: decider }
+
+  # Workers — produce work. Cheaper-thinking tier.
   execution-worker: { class: worker }
   archivist:        { class: worker }
-  verifier:         { class: worker }
+  learning:         { class: worker }
+  nurse:            { class: worker }
+
+  # Fast — fetch and check, not reason. Fast-process tier.
+  retrieval-worker: { class: fast }
+  verifier:         { class: fast }
+
+  # Oversight — guard work. Diverse lineage vs decider/worker.
   monitor:          { class: oversight }
   qc:               { class: oversight }
   security:         { class: oversight }
-  learning:         { class: worker }
-  loop-controller:  { class: worker }
   evaluator:        { class: oversight }   # diverse lineage -> independent measurement (no grading its own homework)
 
 # Optional: pin a single role without touching the profile. Example:
 # roles:
-#   security: { class: oversight, model: openrouter/anthropic/claude-opus-4 }
+#   security: { class: oversight, model: openrouter/anthropic/claude-opus-4.8 }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Single-provider hosts
+# ─────────────────────────────────────────────────────────────────────────────
+# If the environment profile (environment/) shows the host exposes only ONE
+# provider (e.g. a Claude Code env with only Anthropic, or a Copilot env with
+# only OpenAI), default all roles to that provider's models. The diverse-lineage
+# invariant is best-effort in this mode:
+#
+#   1. Prefer a different model FAMILY within the same provider for oversight
+#      (e.g. Anthropic: worker = claude-opus-4.8, oversight = claude-haiku —
+#      different family, same provider).
+#   2. If the provider exposes only one model family, set oversight to the same
+#      model and flag the relaxation in the environment profile's
+#      `tool_boundary.notes` so the human acknowledges the anti-correlation
+#      guarantee is relaxed. The validator will still pass (it checks lineage
+#      strings, not provider reachability), but the human must accept the risk.
+#   3. Never disable oversight roles themselves — only the lineage diversity
+#      may be relaxed, and only with human acknowledgment.
+#
+# Example single-provider (Anthropic-only) profile:
+#   profiles:
+#     anthropic-only:
+#       decider:   openrouter/anthropic/claude-opus-4.8
+#       worker:    openrouter/anthropic/claude-sonnet-4.5
+#       fast:      openrouter/anthropic/claude-haiku
+#       oversight: openrouter/anthropic/claude-haiku   # different family, same provider
