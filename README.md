@@ -37,23 +37,45 @@ The same discipline that contains an untrusted model is exactly what makes loopi
 
 There is nothing to `pip install` as a server. This repository is a **portable specification an agent reads and then constructs around itself**, mapped onto whatever stack you already use — VS Code / GitHub Copilot, a custom harness, a plain function-calling loop, LangGraph, and so on.
 
-### Point your agent at it (copy-paste)
+There are two ways in: hand the job to your **agent** (it fetches this repo and builds the harness for you), or wire it up **yourself**.
 
-Open this repo in your AI coding tool and give your agent this one instruction:
+### Option A — Point your agent at it (copy-paste)
 
-> Read `AGENTS.md`, then follow `BUILD.md` step by step, and build the Polos harness in this
-> workspace, adapted to my stack. Use the matching note in `adapters/` (or `adapters/generic.md`
-> if none fits). When you finish, run `python tools/validate_mesh.py` and show me the result.
+You don't need to clone anything first. Open **any** project in your AI coding tool (Copilot, Cursor, Claude Code, etc.) and paste this prompt — the agent will pull Polos and build it around your code:
+
+```text
+Build the Polos agent-safety harness into my project.
+
+1. Fetch the spec from https://github.com/CoeusInstitute/Polos
+   (clone it with git, or read it directly if it's already in my workspace).
+2. Open its AGENTS.md first — that is the entry point — then follow BUILD.md step by step.
+3. Construct the Polos mesh adapted to MY stack. Use the matching note in adapters/
+   (or adapters/generic.md if none fits) to decide how tools are granted and denied.
+4. Bind models in models.yaml: one line per role. Keep oversight (Monitor, QC, Security)
+   and the Evaluator on a DIFFERENT model lineage than the workers.
+5. When done, run `python tools/validate_mesh.py` and show me the output. It must print PASS.
+
+Hard rule: do not weaken any safety constraint while building. Deciders hold no tools;
+only the Execution Worker acts, and only on scoped, monitored grants.
+```
 
 That is enough for a capable agent. The instructions are written to be followed **literally, in order**, so smaller models can build it too: every step names the exact file to read and what to wire next, and the validator mechanically proves the result is complete.
 
-### Build it yourself (human)
+### Option B — Build it yourself (human)
 
-1. Clone the repo and open it in your editor.
-2. `pip install -r tools/requirements.txt && python tools/validate_mesh.py` — confirm it prints `PASS`.
-3. Bind your models in [`models.yaml`](models.yaml) (one line per role; keep oversight on a different model lineage than workers).
-4. Pick an adapter in [`adapters/`](adapters/) for your stack.
-5. Have your agent follow [`BUILD.md`](BUILD.md).
+1. **Clone the spec.**
+   ```bash
+   git clone https://github.com/CoeusInstitute/Polos.git
+   cd Polos
+   ```
+2. **Verify it's intact.** The validator mechanically proves the spec has no gaps before you build on it.
+   ```bash
+   pip install -r tools/requirements.txt
+   python tools/validate_mesh.py    # expect: PASS - every enforced completeness invariant holds.
+   ```
+3. **Bind your models.** Edit [`models.yaml`](models.yaml) — one line per role. Keep oversight (Monitor/QC/Security) and the Evaluator on a **different model lineage** than the workers; that anti-correlation is what stops a jailbreak of one model from fooling its guardian.
+4. **Pick your adapter.** Choose the note in [`adapters/`](adapters/) that matches your stack — [`vscode-copilot.md`](adapters/vscode-copilot.md), [`langgraph.md`](adapters/langgraph.md), or [`generic.md`](adapters/generic.md). It explains how to deny tools to deciders and oversight in your runtime (the one rule a host **must** enforce).
+5. **Build it.** Follow [`BUILD.md`](BUILD.md) — read [`AGENTS.md`](AGENTS.md) for the map, then wire the roles, the flow graph, and the gates as it directs. Re-run `python tools/validate_mesh.py` when you're done and confirm it still prints `PASS`.
 
 ---
 
@@ -120,7 +142,8 @@ flowchart TD
     M1 -->|PASS| RT[Router<br/>plan + what to retrieve]
     RT -->|retrieval_manifest| RW[Retrieval Worker<br/>read-only]
     RW -->|retrieval_result| M2{{Monitor<br/>scrub injection}}
-    M2 -->|PASS| TM[Taskmaster<br/>assignments + JIT creds]
+    M2 -->|PASS| RT
+    RT -->|task_manifest| TM[Taskmaster<br/>assignments + JIT creds]
     TM -->|assignment| EW[Execution Worker<br/>only granted tools]
     EW -->|work_result| MS{{Monitor<br/>safety · two-axis}}
     MS -->|FAIL| BL[block]
@@ -174,6 +197,7 @@ flowchart LR
     L -->|proposed_improvement| E[Evaluator<br/>shadow-test on held-out experience]
     E -->|measured_improvement| M{{Monitor<br/>safety review}}
     E -->|unmeasured / regressing| RJ[rejected → audit]
+    M -->|weakens a constraint| FL[flagged → audit]
     M -->|non-safety| S[[Security ratify]]
     M -->|safety-adjacent| HU([Human ratify])
     S & HU -->|backpack_commit| BP[(backpacks/<br/>append-only, versioned)]
