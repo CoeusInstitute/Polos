@@ -94,7 +94,7 @@ There are two ways in: hand the job to your **agent** (it fetches this repo and 
 You don't need to clone anything first. Open **any** project in your AI coding tool (Copilot, Cursor, Claude Code, etc.) and paste this prompt; the agent will pull Polos and build it around your code:
 
 ```text
-Build the Polos agent-safety harness into my project.
+Merge the Polos agent harness into the current harness, preserving both the functionality of Polos and the current specs and tooling of the current harness. This should be an improvement merge, not a clear and replace. Think systematically and logically, infer the desired outcome and proceed. 
 
 1. Fetch the spec from https://github.com/CoeusInstitute/Polos
    (clone it with git, or read it directly if it's already in my workspace).
