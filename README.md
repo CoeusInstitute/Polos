@@ -519,7 +519,7 @@ If you want to build something on top of Polos that the AGPL would not allow, th
 
 ## Status
 
-Reference architecture, `v0.2.0` (adds safe looping + measured self-improvement). "Polos" is the project's name; forks may rename by updating `README.md`, `NOTICE`, and `CONTRIBUTING.md`.
+Core runtime, `v0.3.0` (adds the installable Python harness, governed tool gateway, verification gates, safe looping, and measured self-improvement scaffolds). "Polos" is the project's name; forks may rename by updating `README.md`, `NOTICE`, and `CONTRIBUTING.md`.
 
 ## Credits
 
