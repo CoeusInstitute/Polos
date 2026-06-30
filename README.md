@@ -12,7 +12,7 @@
 <br/>
 
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-reference%20architecture-success)](#)
+[![Status](https://img.shields.io/badge/status-core%20runtime%20v0.3-success)](#)
 [![Structural checks](https://img.shields.io/badge/structural%20checks-423%20passing-success)](tools/validate_mesh.py)
 [![Roles](https://img.shields.io/badge/roles-14-informational)](roles/)
 [![Invariants](https://img.shields.io/badge/invariants-I1–I15-informational)](contracts/flow.graph.yaml)
@@ -35,8 +35,8 @@
 
 - [What this is](#what-this-is)
 - [Background](#background)
-- [This is a spec your agent builds, not a runtime you install](#this-is-a-spec-your-agent-builds-not-a-runtime-you-install)
-  - [Option A: Point your agent at it](#option-a-point-your-agent-at-it-copy-paste)
+- [Installable runtime and buildable spec](#installable-runtime-and-buildable-spec)
+  - [Option A: Point your agent at it](#option-a-point-your-agent-at-it-self-assemble)
   - [Option B: Build it yourself](#option-b-build-it-yourself-human)
 - [Architecture](#architecture)
 - [Dataflow](#dataflow-the-path-a-single-request-takes)
@@ -69,6 +69,15 @@ The mesh is built around five capabilities that have to hold *at the same time* 
 
 The same discipline that contains an untrusted model is exactly what makes looping and self-improvement safe to switch on. That combination, not prompt-injection defense alone, is the point.
 
+### How Polos differs from other agent harnesses
+
+Claude Code, Codex CLI, OpenCode, and Agent Zero are strong because a capable model can directly read, write, and run things. Polos keeps that capability but routes it through a **structurally governed authority chain**: the model that decides what to do never holds the tools; the single role that *does* hold tools acts only on a scoped, time-boxed grant; and tool-less guardians can reject, rework, quarantine, or **halt** at any point. You get real agentic action *and* a system where no single mistaken or manipulated model can both choose a harmful action and carry it out. That is the structural advantage the rest of this README makes concrete.
+
+### What's in the repo today
+
+- **The spec — authoritative.** A runtime-neutral governed-agent mesh: the immutable constitution, 14 role cards, the one message envelope, the complete flow graph, the state machine, and model bindings — plus a validator that mechanically proves the wiring has no gaps. An agent reads this and assembles the mesh in your environment.
+- **The reference runtime — [`polos/`](polos), v0.3.** An installable Python package and `polos` CLI that makes the kernel runnable locally: durable task contracts, a fail-closed policy engine, JIT grants, a governed tool gateway, hash-chained audit, verifier-gated loops, a model router, and host adapter interfaces. It is one host mapping and is never more authoritative than the spec.
+
 ---
 
 ## Background
@@ -83,33 +92,76 @@ Coeus Institute is glad to release Polos under the **AGPL-3.0** license. We beli
 
 ---
 
-## This is a spec your agent builds, not a runtime you install
+## Installable runtime and buildable spec
 
-There is nothing to `pip install` as a server. This repository is a **portable specification an agent reads and then constructs around itself**, mapped onto whatever stack you already use: VS Code / GitHub Copilot, a custom harness, a plain function-calling loop, LangGraph, and so on.
+Polos is still a **portable governed-agent mesh specification** first: the constitution, role cards,
+contracts, flow graph, state machine, model bindings, and validator remain authoritative. It now also
+ships an initial Python runtime layer, **Polos Core Runtime v0.3**, so the safety kernel can be used as
+a local CLI harness with durable task contracts, fail-closed policy, JIT grants, audit logging,
+verification evidence, and bounded loop scaffolding.
 
-There are two ways in: hand the job to your **agent** (it fetches this repo and builds the harness for you), or wire it up **yourself**.
+Install the local runtime from a clone:
 
-### Option A: Point your agent at it (copy-paste)
-
-You don't need to clone anything first. Open **any** project in your AI coding tool (Copilot, Cursor, Claude Code, etc.) and paste this prompt; the agent will pull Polos and build it around your code:
-
-```text
-Merge the Polos agent harness into the current harness, preserving both the functionality of Polos and the current specs and tooling of the current harness. This should be an improvement merge, not a clear and replace. Think systematically and logically, infer the desired outcome and proceed. 
-
-1. Fetch the spec from https://github.com/CoeusInstitute/Polos
-   (clone it with git, or read it directly if it's already in my workspace).
-2. Open its AGENTS.md first (that is the entry point), then follow BUILD.md step by step.
-3. Construct the Polos mesh adapted to MY stack. Use the matching note in adapters/
-   (or adapters/generic.md if none fits) to decide how tools are granted and denied.
-4. Bind models in models.yaml: one line per role. Keep oversight (Monitor, QC, Security)
-   and the Evaluator on a DIFFERENT model lineage than the workers.
-5. When done, run `python tools/validate_mesh.py` and show me the output. It must print PASS.
-
-Hard rule: do not weaken any safety constraint while building. Deciders hold no tools;
-only the Execution Worker acts, and only on scoped, monitored grants.
+```bash
+pip install -e ".[dev]"        # install the `polos` CLI (PyYAML + jsonschema)
+polos version                  # 0.3.0
+polos validate                 # runs tools/validate_mesh.py — must print PASS
+polos init                     # scaffold .agent/ runtime state + a redacted environment profile
+polos plan "test task"         # write a durable task contract under .agent/tasks/<id>/
+polos run --dry-run            # run required checks, write EVIDENCE.md; no tools or model calls
+polos audit                    # list task records + verify the hash-chained tool-call log
 ```
 
-That is enough for a capable agent. The instructions are written to be followed **literally, in order**, so smaller models can build it too: every step names the exact file to read and what to wire next, and the validator mechanically proves the result is complete.
+No API keys are needed for `validate`, `init`, `plan`, or `run --dry-run`, so you can exercise the
+governed-authority chain locally before any model or provider is wired in.
+
+There are still two ways in: run the packaged local runtime directly, or hand the build protocol to
+your **agent** so it maps the mesh onto your host environment.
+
+### Option A: Point your agent at it (self-assemble)
+
+**This is the primary path.** Polos is written to be built *by an agent*, into the environment that agent already works in. The repo is laid out so it can self-assemble the mesh with no manual wiring:
+
+- **[`AGENTS.md`](AGENTS.md)** — the entry point and directory map (what every folder owns).
+- **[`BUILD.md`](BUILD.md)** — the procedure: eleven ordered steps, each naming the exact file to read and what to wire next, so even smaller models can follow it literally.
+- **[`adapters/`](adapters/)** — how to map the runtime-neutral spec onto your host (VS Code / Copilot, Claude Code, Codex, LangGraph, or a generic loop).
+- **[`tools/validate_mesh.py`](tools/validate_mesh.py)** — the proof: it must print `PASS` before the mesh goes live.
+
+If Polos is already open in your AI coding tool, the shortest instruction works: *“Read `AGENTS.md`, then follow `BUILD.md` to construct the mesh in this environment.”* Starting from a different project? Paste the prompt below and the agent will fetch Polos first, then build it around your code:
+
+```text
+You are an agent. Build the Polos governed-agent mesh into THIS environment, following its own spec.
+
+1. Get the spec. If Polos is not already in my workspace, clone https://github.com/CoeusInstitute/Polos
+   (or read it in place). Open AGENTS.md FIRST — it is the entry point and directory map.
+2. Detect my host and pick the matching note in adapters/ (use adapters/generic.md if none fits).
+   The host MUST be able to deny tools to deciders and oversight. If it cannot, STOP and tell me.
+3. Load constitution/core.md and hold it read-only — it is immutable for the build.
+4. Resolve models in models.yaml: one line per role. Keep oversight (Monitor, QC, Security) and the
+   Evaluator on a DIFFERENT model lineage than the deciders and workers (anti-correlated failure).
+5. Instantiate all 14 roles from roles/*.agent.md with ONLY the capabilities each card declares.
+   Workers get NO standing credentials — the Taskmaster mints scoped, time-boxed grants per assignment.
+6. Wire the flow graph (contracts/flow.graph.yaml). Every message must validate against
+   contracts/envelope.schema.json, and senders NEVER choose their own gates — the graph assigns them.
+7. Wire the state machine (contracts/state-machine.md). Default on uncertain or unavailable = BLOCK.
+8. Stand up oversight: the audit log, Security's independent verdict feed, HALT/quarantine to every
+   plane, and the conditional Nurse triage (read-only, threshold + cooldown gated).
+9. Run the DOX Archivist pass so every directory's AGENTS.md is current and reachable from the root.
+10. Self-test: send one benign request (expect a response) and one out-of-scope request (expect a gate
+    to block it); confirm the audit log captured every hop.
+11. Run `python tools/validate_mesh.py` and show me the output. It MUST print PASS.
+
+Hard rules — never weaken these while building:
+- Deciders (Alpha, Router, Taskmaster, Loop Controller) and oversight (Monitor, QC, Security, Evaluator)
+  hold NO tools. The Execution Worker is the only actor, and only on a scoped, time-boxed grant.
+- Fail closed. Loops need an externally verifiable stop condition checked by the Verifier. Self-improvement
+  may propose measured, reversible lessons but can NEVER grant authority or relax a gate.
+- Do not weaken the constitution, contracts, flow graph, or validator. Do not go live on a failing invariant.
+```
+
+**Already inside an existing harness?** Use the same protocol but tell the agent to *merge, not replace*: preserve your current specs and tooling and add Polos's governance on top, then run the validator.
+
+That is enough for a capable agent: every step names the exact file to read and what to wire next, and the validator mechanically proves the result is complete.
 
 ### Option B: Build it yourself (human)
 
@@ -125,7 +177,13 @@ That is enough for a capable agent. The instructions are written to be followed 
    ```
 3. **Bind your models.** Edit [`models.yaml`](models.yaml), one line per role. Keep oversight (Monitor/QC/Security) and the Evaluator on a **different model lineage** than the workers; that anti-correlation is what stops a jailbreak of one model from fooling its guardian.
 4. **Pick your adapter.** Choose the note in [`adapters/`](adapters/) that matches your stack: [`vscode-copilot.md`](adapters/vscode-copilot.md), [`langgraph.md`](adapters/langgraph.md), or [`generic.md`](adapters/generic.md). It explains how to deny tools to deciders and oversight in your runtime (the one rule a host **must** enforce).
-5. **Build it.** Follow [`BUILD.md`](BUILD.md): read [`AGENTS.md`](AGENTS.md) for the map, then wire the roles, the flow graph, and the gates as it directs. Re-run `python tools/validate_mesh.py` when you're done and confirm it still prints `PASS`.
+5. **Install and test the runtime.**
+    ```bash
+    pip install -e ".[dev]"
+    polos validate
+    python -m pytest
+    ```
+6. **Build it for your host.** Follow [`BUILD.md`](BUILD.md): read [`AGENTS.md`](AGENTS.md) for the map, then wire the roles, the flow graph, and the gates as it directs. Re-run `python tools/validate_mesh.py` when you're done and confirm it still prints `PASS`.
 
 ---
 
@@ -299,6 +357,7 @@ polos/
 ├── README.md                  ← you are here
 ├── models.yaml                ← model binding (OpenRouter-style); tiered by role, swap a model in one line
 ├── mesh.config.yaml           ← enabled roles, tiering, loop + improvement budgets, fail-closed limits
+├── pyproject.toml             ← installable `polos` package + `polos` CLI entry point
 ├── LICENSE  ·  NOTICE         ← AGPL-3.0
 ├── CONTRIBUTING.md  ·  CODE_OF_CONDUCT.md  ·  SECURITY.md  ·  CHANGELOG.md
 │
@@ -325,6 +384,16 @@ polos/
 │   └── AGENTS.md
 ├── tools/                     ← the structural validator + CI dependency
 │   ├── validate_mesh.py · requirements.txt
+│   └── AGENTS.md
+├── polos/                     ← Polos Core Runtime: installable CLI + governed execution (Python)
+│   ├── cli.py                    polos validate · init · plan · run --dry-run · audit · version
+│   ├── contracts/ · runtime/     task contracts, role boundaries, grants, approvals, sandbox, loop controller
+│   ├── policy/ · tools/          fail-closed policy engine + governed tool gateway
+│   ├── audit/ · verification/    hash-chained audit log + evidence-producing checks
+│   ├── models/ · adapters/       provider-neutral model router + host adapter interfaces
+│   ├── evaluation/               authority-preserving measured-improvement scaffold
+│   └── AGENTS.md
+├── tests/                     ← runtime tests (policy, grants, gateway, loop, CLI, verification)
 │   └── AGENTS.md
 ├── loops/                     ← runtime: per-loop append-only ledger (the loop's source of truth)
 │   └── AGENTS.md

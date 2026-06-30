@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "polos"
+version = "0.3.0"
+description = "Governed agent mesh runtime harness for Polos."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "AGPL-3.0-only" }
+authors = [
+  { name = "Coeus Institute" }
+]
+dependencies = [
+  "PyYAML>=6.0",
+  "jsonschema>=4.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0"
+]
+
+[project.scripts]
+polos = "polos.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["polos*"]
+
+[tool.setuptools.package-data]
+polos = ["policy/*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

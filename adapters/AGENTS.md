@@ -15,6 +15,9 @@ the canonical specs.
 
 ## Work Guidance
 - New host -> add a note here following `generic.md`; reference it from `BUILD.md` step 1.
+- The Python runtime's host adapter interfaces live in `polos/adapters/`. These markdown notes remain
+  the canonical, host-agnostic source; the runtime interfaces document grants/denials/logging/approvals
+  per host and must not contradict or weaken these notes or the canonical specs.
 - Each adapter must state how the runtime populates `environment_profile` safely: host kind,
   provider-target detection, approval policy, and tool-boundary enforcement. Secrets are never stored.
 - Each adapter must state how Nurse diagnostics stay read-only and threshold-triggered. Nurse repairs

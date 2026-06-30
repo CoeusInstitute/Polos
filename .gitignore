@@ -19,6 +19,7 @@ build/
 *.local
 
 # Runtime-written stores (the repo ships the contracts, not the data)
+.agent/
 .coeus/tool-failures.log
 audit/*.log
 audit/*.jsonl
@@ -42,3 +43,7 @@ Thumbs.db
 # Local-only / not part of the public Polos spec
 .coeus/
 LESSONS_LEARNED.md
+
+# Python build artifacts
+*.egg-info/
+polos.egg-info/

@@ -207,6 +207,35 @@ flowchart LR
 
 Full detail in [PLAYBOOKS.md](PLAYBOOKS.md).
 
+## Runtime layer (Polos Core Runtime)
+The canonical specs are runtime-neutral, but Polos now ships a Python reference runtime in `polos/`
+(installable via `pyproject.toml`) so the safety kernel can be run as a local, auditable CLI harness.
+The runtime is **one host mapping, not a new source of authority**: it wraps the structural validator
+and enforces the same decide/act split in code. It never makes README or docs more authoritative than
+`constitution/`, `roles/`, `contracts/`, `models.yaml`, or `tools/validate_mesh.py`.
+
+The runtime maps spec concepts onto enforceable code:
+
+| Spec concept | Runtime module | What it enforces |
+|---|---|---|
+| Build/validate protocol | `polos/cli.py`, `polos/tools/validator.py` | `polos validate` runs the canonical validator unchanged |
+| Scoped assignment | `polos/contracts/task.py` (`.agent/tasks/<id>/`) | durable task contract; planning and execution stay separate phases |
+| Capability ceilings | `polos/runtime/roles.py` | deciders and oversight get no tools in code; Execution Worker is the only actor |
+| JIT credentials | `polos/runtime/grants.py` | only the Taskmaster mints scoped, time-boxed grants; Security revokes |
+| Tiered oversight | `polos/policy/`, `polos/runtime/approvals.py`, `polos/runtime/sandbox.py` | fail-closed policy with approval and sandbox preconditions |
+| The one envelope of tool use | `polos/tools/gateway.py` | every tool call flows task → role → grant → policy → approval/sandbox → audit |
+| Hash-chained audit | `polos/audit/` | append-only, tamper-evident tool-call log per task |
+| Bounded loops | `polos/runtime/loop_controller.py` | budgets + ledger + verifier-gated completion; self-report is never enough |
+| Verifier evidence | `polos/verification/` | `EVIDENCE.md` + `verification.json`; completion requires passing or N/A-with-reason checks |
+| Model binding | `polos/models/` | `models.yaml`-driven router; dry-run without keys; oversight/evaluator lineage check |
+| Host adapters | `polos/adapters/` | typed interfaces documenting how each host grants, denies, logs, and approves |
+| Measured self-improvement | `polos/evaluation/` | scaffold that rejects authority expansion and regressions |
+
+With no API keys present the CLI still supports `validate`, `init`, `plan`, and `run --dry-run`, so the
+governed-authority chain can be exercised locally before any model or provider is wired in. Network and
+external-service actions are denied by default, and the GitHub adapter parses issue input into a
+branch/PR plan without requiring write access.
+
 ## Nurse triage (conditional self-healing)
 The Nurse is a read-only maintenance role for the harness itself. It wakes only on explicit user
 checkup request, Security integrity signal, or a thresholded audit pattern with cooldown evidence. It

@@ -37,7 +37,7 @@ ALLOWED_OFF_GRAPH_SCHEMAS = {"episode", "environment_profile", "project_context"
 # to anything written by a runtime, a package manager, or git, so these are skipped
 # during the well-formedness sweep.
 IGNORED_DIR_NAMES = {
-    ".venv", "venv", ".git", ".coeus", "node_modules", "__pycache__",
+    ".venv", "venv", ".git", ".agent", ".coeus", "node_modules", "__pycache__",
     ".mypy_cache", ".pytest_cache", ".idea", ".vscode",
     # runtime stores (agents write these at run time; not spec)
     "loops", "backpacks", "experience", "audit", "environment",

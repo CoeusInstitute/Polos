@@ -6,7 +6,7 @@ property mechanically.
 
 ## Ownership
 - `validate_mesh.py` — checks JSON/YAML well-formedness (canonical spec files only — runtime stores
-  and the `.venv`/`.git` trees are skipped so spec validity never couples to runtime data), exact
+  and the `.agent`/`.venv`/`.git` trees are skipped so spec validity never couples to runtime data), exact
   edge-by-edge card handoff coverage, card-vs-flow-graph input/output consistency (both directions),
   schema coverage for every graph message type, envelope hardening sentinels, model-registry sanity
   (including independent oversight/evaluator bindings), capability ceilings, final-response gating,

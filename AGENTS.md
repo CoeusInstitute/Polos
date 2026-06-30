@@ -25,6 +25,9 @@ of any single model.
 - `loops/` owns runtime loop ledgers; `experience/` owns the runtime episode store for measured self-improvement.
 - `environment/` owns redacted runtime environment profiles used to match safe repeatable task playbooks.
 - `adapters/` owns stack-specific bootstrap notes (additive only).
+- `polos/` owns the installable Python runtime layer: CLI, task contracts, policy, grants,
+  tool gateway, verification, loop controller, provider abstraction, and adapter interfaces.
+- `tests/` owns runtime tests for the installable harness layer.
 - `docs/` owns human-facing material. **Derived** — never authoritative.
 
 ## Global Contracts
@@ -60,6 +63,9 @@ of any single model.
   owns installation, repair, and closeout of the `AGENTS.md` tree.
 - Bind models only in `models.yaml`. Never hardcode a model inside an agent card.
 - Add stack support by adding a file under `adapters/`, never by editing the canonical specs.
+- Keep runtime implementation in `polos/`. Runtime code may wrap canonical specs but must not make
+  README/docs more authoritative than `constitution/`, `roles/`, `contracts/`, `models.yaml`, or
+  `tools/validate_mesh.py`.
 
 ## Verification
 - Structure/flow: run `python tools/validate_mesh.py` (also wired into CI). It checks the
@@ -92,6 +98,8 @@ keeps them current, schema-conformant (DOX Child Doc Shape), and reachable from 
 - `tools/AGENTS.md` — Owns the structural validator and CI tooling.
 - `loops/AGENTS.md` — Owns the runtime loop ledgers that drive safe, fresh-context loop iteration.
 - `experience/AGENTS.md` — Owns the runtime episode store the Evaluator measures improvements against.
+- `polos/AGENTS.md` — Owns the installable Python runtime package and CLI implementation.
+- `tests/AGENTS.md` — Owns runtime package tests.
 
 `.github/` intentionally has no child DOX doc; it holds standard GitHub metadata (CI workflow,
 issue and PR templates), not mesh contracts.

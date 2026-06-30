@@ -1,0 +1,49 @@
+filesystem:
+  read:
+    - "."
+  write:
+    - ".agent/**"
+  deny:
+    - ".env"
+    - ".env.*"
+    - "**/.ssh/**"
+    - "**/.aws/**"
+
+shell:
+  default: deny
+  allow:
+    - "python tools/validate_mesh.py"
+    - "pytest"
+    - "python -m pytest"
+    - "git status"
+    - "git diff"
+  require_approval:
+    - "pip install *"
+    - "npm install *"
+    - "git commit *"
+  deny:
+    - "sudo *"
+    - "rm -rf *"
+    - "curl * | sh"
+
+network:
+  default: deny
+
+git:
+  default: deny
+  allow:
+    - "status"
+    - "diff"
+  require_approval:
+    - "commit"
+    - "push"
+    - "tag"
+
+packages:
+  default: requires_approval
+
+secrets:
+  default: deny
+
+external_services:
+  default: deny

@@ -94,3 +94,14 @@ invariant that did not pass. **Do not go live with a failing invariant.**
   gates are conditional edges with the FAIL branch wired to rework/block/escalate.
 - **Custom harness** — Implement the envelope as your message type and the state machine as your
   reducer; everything else follows.
+
+## Reference runtime
+A Python reference implementation of these steps ships in `polos/` (installable via `pyproject.toml`).
+It is **one host mapping, not a replacement** for this protocol or the canonical specs. It wraps
+`tools/validate_mesh.py` (`polos validate`), creates durable task contracts (`polos plan` →
+`.agent/tasks/<id>/`), and enforces the decide/act split in code through a fail-closed policy engine,
+Taskmaster-only JIT grants, a governed tool gateway, and verifier-gated bounded loops. Install it with
+`pip install -e ".[dev]"`, then run `polos --help`; `polos validate`, `init`, `plan`, and
+`run --dry-run` work with no API keys. See `polos/AGENTS.md` for the package contract. The runtime never
+makes README or docs more authoritative than `constitution/`, `roles/`, `contracts/`, `models.yaml`, or
+the validator.

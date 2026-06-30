@@ -6,6 +6,30 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 ### Added
+- **Polos Core Runtime (v0.3).** Added the first installable runtime layer beside the canonical spec:
+  an installable `polos` Python package (`pyproject.toml`) exposing a CLI (`polos validate`, `init`,
+  `plan`, `run --dry-run`, `audit`, `version`). `polos validate` wraps `tools/validate_mesh.py` rather
+  than replacing it. Includes durable **task contracts** under `.agent/tasks/<id>/` (TASK.yaml, PLAN.md,
+  LOG.md, TOOLCALLS.jsonl, EVIDENCE.md, REVIEW.md) with L0–L6 autonomy levels and planning/execution
+  kept as separate phases; a **fail-closed policy engine** (filesystem/shell/network/git/package/secret/
+  destructive/external dimensions with allowed/denied/requires_approval/requires_sandbox/
+  requires_elevated_grant decisions); a **governed tool gateway** (read_file, write_file, patch_file,
+  list_dir, search_text, shell_run, git_status, git_diff) where every call passes task contract → role
+  authorization → grant → policy → approval/sandbox → hash-chained audit, and only the Execution Worker
+  may use write/shell tools; **JIT grants** minted only by the Taskmaster, scoped and time-boxed,
+  revocable by Security; a **bounded loop controller** with budgets, a per-task `loops/` ledger,
+  fresh-context rebuild, and verifier-gated completion (worker self-report is never sufficient); a
+  **verification subsystem** writing `EVIDENCE.md` + `verification.json` (mesh validation, optional
+  pytest, git-diff presence, forbidden-file, and policy-violation checks); typed **role runners** for
+  all 14 roles with capability boundaries enforced in code; a provider-neutral **model router**
+  (`models.yaml`-driven, dry-run without API keys, oversight/evaluator lineage check); host **adapter
+  interfaces** (generic, GitHub, VS Code Copilot, Codex CLI, Claude Code, OpenCode); a redacted
+  **environment profile** writer; an approval store and sandbox interface; and a deterministic
+  **Evaluator scaffold** that rejects authority expansion and regressions. The safety kernel is
+  unchanged: deciders and oversight remain tool-less, network is denied by default, secrets are never
+  written to logs, and the structural validator stays authoritative. Covered by tests for the policy
+  engine, task contract, grants, tool gateway, loop budget, verification, audit chain, CLI, and
+  adapters.
 - **Conditional Nurse triage.** Added a read-only Nurse role for harness checkups and thresholded
   self-healing: user-requested checkups, Security integrity signals, and repeated audit patterns can
   trigger read-only diagnostics. Nurse emits `checkup_report` and `repair_manifest`; repairs still pass
